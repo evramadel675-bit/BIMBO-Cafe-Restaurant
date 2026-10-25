@@ -523,9 +523,9 @@
   let isOwnerAuth = false;
   const getOwnerPin = () => {
     try {
-      return localStorage.getItem('bimbo_owner_pin') || '1234';
+      return localStorage.getItem('bimbo_owner_pin') || '';
     } catch(e) {
-      return '1234';
+      return '';
     }
   };
 
@@ -534,6 +534,13 @@
       if (typeof action === 'function') action();
       return;
     }
+
+    const currentPin = getOwnerPin();
+    if (!currentPin) {
+      promptPinSetup(action);
+      return;
+    }
+
     const html = `
       <div style="text-align:center;margin-bottom:14px">
         <div style="width:48px;height:48px;border-radius:14px;background:var(--warn-soft);color:var(--warn);display:inline-flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:1.4rem">🔒</div>
@@ -541,15 +548,14 @@
         <p class="sub" style="font-size:.85rem">${esc(desc)}</p>
       </div>
       <form id="pin-form" style="display:flex;flex-direction:column;gap:10px">
-        <input type="password" id="pin-val" name="p" inputmode="numeric" pattern="[0-9]*" maxlength="8" placeholder="••••" style="text-align:center;font-size:1.6rem;letter-spacing:.3em;padding:8px;border:1px solid var(--line);border-radius:12px;background:var(--surface2);outline:none;width:100%" autofocus>
-        <div id="pin-err" style="display:none;color:var(--bad);font-weight:700;font-size:.82rem;text-align:center">كلمة المرور غير صحيحة! يرجى المحاولة مرة أخرى</div>
+        <input type="password" id="pin-val" name="p" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="••••" style="text-align:center;font-size:1.6rem;letter-spacing:.3em;padding:8px;border:1px solid var(--line);border-radius:12px;background:var(--surface2);outline:none;width:100%" autofocus>
+        <div id="pin-err" style="display:none;color:var(--bad);font-weight:700;font-size:.82rem;text-align:center">رمز المرور غير صحيح! يرجى المحاولة مرة أخرى</div>
         <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:6px;margin-block:4px">
           ${[1,2,3,4,5,6,7,8,9].map(n => `<button type="button" class="btn" data-act="pin-key" data-k="${n}" style="height:44px;font-size:1.15rem;font-weight:700">${n}</button>`).join('')}
           <button type="button" class="btn" data-act="pin-clear" style="height:44px;font-size:.82rem;color:var(--muted)">مسح</button>
           <button type="button" class="btn" data-act="pin-key" data-k="0" style="height:44px;font-size:1.15rem;font-weight:700">0</button>
           <button type="button" class="btn" data-act="pin-back" style="height:44px;font-size:1rem;color:var(--bad)">⌫</button>
         </div>
-        <div style="text-align:center;font-size:.78rem;color:var(--muted)">الرمز الافتراضي للنظام هو: <strong style="color:var(--accent)">1234</strong></div>
         <div class="acts" style="margin-top:6px">
           <button type="button" class="btn" data-act="mclose">إلغاء</button>
           <button type="submit" class="btn pri" style="font-weight:700">تأكيد الدخول</button>
@@ -570,7 +576,57 @@
         const err = $('#pin-err');
         if (err) err.style.display = 'block';
         const inp = $('#pin-val');
-        if (inp) { inp.value = ''; inp.focus(); }
+        if (inp) {
+          inp.value = '';
+          inp.focus();
+        }
+      }
+    });
+  }
+
+  function promptPinSetup(action) {
+    const html = `
+      <div style="text-align:center;margin-bottom:14px">
+        <div style="width:48px;height:48px;border-radius:14px;background:var(--warn-soft);color:var(--warn);display:inline-flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:1.4rem">🔑</div>
+        <h3 style="margin-bottom:4px">تعيين رمز مرور المالك لأول مرة</h3>
+        <p class="sub" style="font-size:.85rem">لحماية الأرباح والتقارير المالية، يرجى تعيين رمز سري مكون من 4 أرقام</p>
+      </div>
+      <form id="pin-setup-form" style="display:flex;flex-direction:column;gap:12px">
+        <label class="f">الرمز الجديد (4 أرقام)
+          <input type="password" id="setup-pin-1" name="p1" inputmode="numeric" maxlength="4" placeholder="••••" style="text-align:center;font-size:1.4rem;letter-spacing:.25em" required autofocus>
+        </label>
+        <label class="f">تأكيد الرمز الجديد
+          <input type="password" id="setup-pin-2" name="p2" inputmode="numeric" maxlength="4" placeholder="••••" style="text-align:center;font-size:1.4rem;letter-spacing:.25em" required>
+        </label>
+        <div id="setup-pin-err" style="display:none;color:var(--bad);font-weight:700;font-size:.82rem;text-align:center"></div>
+        <div class="acts" style="margin-top:6px">
+          <button type="button" class="btn" data-act="mclose">إلغاء</button>
+          <button type="submit" class="btn pri" style="font-weight:700">حفظ الرمز وتفعيل المالك</button>
+        </div>
+      </form>
+    `;
+    modal(html, (fd) => {
+      const p1 = (fd ? String(fd.get('p1') || '') : ($('#setup-pin-1') ? $('#setup-pin-1').value : '')).trim();
+      const p2 = (fd ? String(fd.get('p2') || '') : ($('#setup-pin-2') ? $('#setup-pin-2').value : '')).trim();
+      const err = $('#setup-pin-err');
+      if (!p1 || p1.length < 4) {
+        if (err) { err.textContent = 'يجب أن يتكون الرمز من 4 أرقام'; err.style.display = 'block'; }
+        return;
+      }
+      if (p1 !== p2) {
+        if (err) { err.textContent = 'الرمزان غير متطابقين! يرجى إعادة التأكيد'; err.style.display = 'block'; }
+        if ($('#setup-pin-2')) { $('#setup-pin-2').value = ''; $('#setup-pin-2').focus(); }
+        return;
+      }
+      try {
+        localStorage.setItem('bimbo_owner_pin', p1);
+        isOwnerAuth = true;
+        closeModal();
+        toast('تم تعيين رمز مرور المالك وتفعيل الجلسة بنجاح!');
+        renderShell();
+        if (typeof action === 'function') action();
+      } catch(e) {
+        if (err) { err.textContent = 'حدث خطأ أثناء حفظ الرمز'; err.style.display = 'block'; }
       }
     });
   }
@@ -1621,20 +1677,20 @@
           <!-- Owner PIN Security Management Card -->
           <div class="card" style="border:1px solid var(--accent);box-shadow:0 2px 8px rgba(194,101,10,0.1)">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-              <h3 style="display:flex;align-items:center;gap:6px">🔐 حماية وأمان المالك (رمز PIN)</h3>
+              <h3 style="display:flex;align-items:center;gap:6px">🔐 تغيير رمز مرور المالك (Change PIN)</h3>
               <span class="pill good">نظام الحماية مفعّل</span>
             </div>
-            <p class="sub" style="margin-bottom:12px">الرمز الافتراضي: <strong>1234</strong>. يمكنك تغييره هنا لحماية التقارير والأسعار.</p>
+            <p class="sub" style="margin-bottom:12px">يمكنك تغيير رمز مرور المالك في أي وقت لضمان سرية تقارير المبيعات وأسعار المنيو من موظفي الكاشير.</p>
             <form data-act="form-change-pin" style="display:flex;flex-direction:column;gap:10px">
-              <label class="f">رمز المالك الحالي
-                <input type="password" id="set-old-pin" placeholder="الرمز الحالي (الافتراضي 1234)" required>
+              <label class="f">الرمز الحالي (Current PIN)
+                <input type="password" id="set-old-pin" placeholder="أدخل رمز المالك الحالي" required>
               </label>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                <label class="f">الرمز الجديد
-                  <input type="password" id="set-new-pin" placeholder="4 أرقام أو أكثر" required>
+                <label class="f">الرمز الجديد (New PIN)
+                  <input type="password" id="set-new-pin" placeholder="أدخل 4 أرقام جديدة" required>
                 </label>
-                <label class="f">تأكيد الرمز الجديد
-                  <input type="password" id="set-confirm-pin" placeholder="أعد إدخال الرمز" required>
+                <label class="f">تأكيد الرمز الجديد (Confirm New PIN)
+                  <input type="password" id="set-confirm-pin" placeholder="أعد إدخال الرمز الجديد" required>
                 </label>
               </div>
               <div class="acts" style="margin-top:6px;justify-content:flex-start">

@@ -464,14 +464,13 @@ export default function App() {
 
   // Owner Authentication & Cashier Safe Mode
   const OWNER_PIN_STORAGE_KEY = 'bimbo_owner_pin';
-  const DEFAULT_OWNER_PIN = '1234';
 
   const [isOwnerAuthenticated, setIsOwnerAuthenticated] = useState<boolean>(false);
   const [ownerPin, setOwnerPin] = useState<string>(() => {
     try {
-      return localStorage.getItem('bimbo_owner_pin') || DEFAULT_OWNER_PIN;
+      return localStorage.getItem(OWNER_PIN_STORAGE_KEY) || '';
     } catch {
-      return DEFAULT_OWNER_PIN;
+      return '';
     }
   });
 
@@ -484,6 +483,11 @@ export default function App() {
   const [pinShake, setPinShake] = useState<boolean>(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
+  // First-Time Setup State
+  const [setupStep, setSetupStep] = useState<1 | 2>(1); // 1: New PIN, 2: Confirm PIN
+  const [setupNewPin, setSetupNewPin] = useState<string>('');
+  const [setupConfirmPin, setSetupConfirmPin] = useState<string>('');
+
   // Settings PIN Change State
   const [oldPinInput, setOldPinInput] = useState<string>('');
   const [newPinInput, setNewPinInput] = useState<string>('');
@@ -491,17 +495,28 @@ export default function App() {
   const [pinChangeError, setPinChangeError] = useState<string>('');
   const [pinChangeSuccess, setPinChangeSuccess] = useState<string>('');
 
+  const isSetupMode = !ownerPin;
+
   const requireOwnerAuth = (action: () => void, title = 'أدخل كلمة مرور المالك للمتابعة', desc = 'هذا القسم محمي ويتطلب صلاحيات المالك') => {
     if (isOwnerAuthenticated) {
       action();
       return;
     }
-    setPinPromptTitle(title);
-    setPinPromptDescription(desc);
-    setEnteredPin('');
+    setPendingAction(() => action);
     setPinError('');
     setPinShake(false);
-    setPendingAction(() => action);
+    setEnteredPin('');
+    setSetupStep(1);
+    setSetupNewPin('');
+    setSetupConfirmPin('');
+
+    if (!ownerPin) {
+      setPinPromptTitle('تعيين رمز مرور المالك لأول مرة');
+      setPinPromptDescription('لحماية أرباحك وإعدادات المنيو، يرجى تعيين رمز مرور مكون من 4 أرقام');
+    } else {
+      setPinPromptTitle(title);
+      setPinPromptDescription(desc);
+    }
     setIsPinModalOpen(true);
   };
 
@@ -519,10 +534,52 @@ export default function App() {
         act();
       }
     } else {
-      setPinError('كلمة المرور غير صحيحة! يرجى المحاولة مرة أخرى');
+      setPinError('رمز المرور غير صحيح! يرجى المحاولة مرة أخرى');
       setPinShake(true);
       setTimeout(() => setPinShake(false), 600);
-      setEnteredPin('');
+      setEnteredPin(''); // Auto-clear dots on error
+    }
+  };
+
+  // First-Time Setup Step 1 (Save Step 1 PIN and proceed to Step 2)
+  const handleSetupStep1 = (pin: string) => {
+    if (pin.length !== 4) {
+      setPinError('يرجى إدخال رمز مكون من 4 أرقام');
+      return;
+    }
+    setSetupNewPin(pin);
+    setSetupStep(2);
+    setSetupConfirmPin('');
+    setPinError('');
+  };
+
+  // First-Time Setup Step 2 (Verify confirmation and save to localStorage)
+  const handleSetupStep2 = (confirmPin: string) => {
+    if (confirmPin !== setupNewPin) {
+      setPinError('تأكيد الرمز غير متطابق! يرجى إعادة إدخال الرمز');
+      setPinShake(true);
+      setTimeout(() => setPinShake(false), 600);
+      setSetupConfirmPin(''); // Auto-clear dots on error
+      return;
+    }
+
+    try {
+      localStorage.setItem(OWNER_PIN_STORAGE_KEY, setupNewPin);
+      setOwnerPin(setupNewPin);
+      setIsOwnerAuthenticated(true);
+      setIsPinModalOpen(false);
+      setSetupStep(1);
+      setSetupNewPin('');
+      setSetupConfirmPin('');
+      setPinError('');
+      showToast('تم تعيين رمز مرور المالك وتفعيل الجلسة بنجاح!');
+      if (pendingAction) {
+        const act = pendingAction;
+        setPendingAction(null);
+        act();
+      }
+    } catch {
+      setPinError('حدث خطأ أثناء حفظ الرمز الجديد في المتصفح');
     }
   };
 
@@ -539,12 +596,12 @@ export default function App() {
     setPinChangeError('');
     setPinChangeSuccess('');
 
-    if (oldPinInput !== ownerPin) {
-      setPinChangeError('رمز المالك الحالي غير صحيح');
+    if (!oldPinInput || oldPinInput !== ownerPin) {
+      setPinChangeError('الرمز الحالي غير صحيح');
       return;
     }
     if (!newPinInput || newPinInput.length < 4) {
-      setPinChangeError('يجب أن يتكون الرمز الجديد من 4 أرقام أو حروف على الأقل');
+      setPinChangeError('يجب أن يتكون الرمز الجديد من 4 أرقام على الأقل');
       return;
     }
     if (newPinInput !== confirmNewPinInput) {
@@ -1464,16 +1521,16 @@ export default function App() {
                 onClick={() => {
                   requireOwnerAuth(
                     () => showToast('مرحباً بك! تم تفعيل صلاحيات المالك'),
-                    'تسجيل دخول المالك',
-                    'أدخل رمز PIN لتفعيل صلاحيات المالك والوصول للتقارير والإعدادات'
+                    ownerPin ? 'تسجيل دخول المالك' : 'تعيين رمز مرور المالك لأول مرة',
+                    ownerPin ? 'أدخل رمز PIN لتفعيل صلاحيات المالك والوصول للتقارير والإعدادات' : 'لم يتم تعيين رمز مرور حتى الآن. يرجى إنشاء رمزك الخاص'
                   );
                 }}
                 className="px-2.5 sm:px-3 py-1.5 rounded-xl border border-[#dedad2] dark:border-[#38342e] bg-white dark:bg-[#1e1c19] text-[#6e685f] dark:text-[#9e978b] hover:text-[#1a1816] dark:hover:text-[#f3efe9] hover:bg-[#eae7e0] dark:hover:bg-[#282521] transition flex items-center gap-1.5 text-xs md:text-sm font-bold shadow-xs active:scale-95"
-                title="تسجيل دخول المالك"
+                title={ownerPin ? 'تسجيل دخول المالك' : 'تعيين رمز المالك لأول مرة'}
               >
                 <Lock className="w-4 h-4 text-[#c2650a]" />
-                <span className="hidden sm:inline">دخول المالك</span>
-                <span className="sm:hidden">دخول</span>
+                <span className="hidden sm:inline">{ownerPin ? 'دخول المالك' : 'تعيين رمز المالك'}</span>
+                <span className="sm:hidden">{ownerPin ? 'دخول' : 'تعيين'}</span>
               </button>
             )}
 
@@ -2863,7 +2920,7 @@ export default function App() {
                           <KeyRound className="w-5 h-5" />
                         </div>
                         <div>
-                          <h3 className="font-bold text-base">حماية وأمان المالك (رمز PIN)</h3>
+                          <h3 className="font-bold text-base">تغيير رمز مرور المالك (Change PIN)</h3>
                           <p className="text-xs text-[#6e685f] dark:text-[#9e978b]">
                             قفل وحماية التقارير والإعدادات وتعديل قائمة المنيو
                           </p>
@@ -2876,48 +2933,54 @@ export default function App() {
                     </div>
 
                     <div className="p-3 rounded-xl bg-[#f5f4f0] dark:bg-[#141311] border border-[#dedad2] dark:border-[#38342e] text-xs text-[#6e685f] dark:text-[#9e978b] mb-4 space-y-1">
-                      <p>• الرمز الافتراضي للنظام هو: <strong className="text-[#1a1816] dark:text-[#f3efe9]">1234</strong>.</p>
-                      <p>• يمكنك تغيير الرمز أدناه للحفاظ على خصوصية أرباح ومبيعات الكرفان من أعين الكاشير.</p>
+                      <p>• يمكنك تغيير رمز مرور المالك في أي وقت لضمان سرية تقارير المبيعات والأرباح من أعين موظفي الكاشير.</p>
+                      <p>• الرمز مطلوب لحماية شاشات التقارير، الإعدادات، واستيراد وتعديل المنيو.</p>
                     </div>
 
                     <form onSubmit={handleChangeOwnerPin} className="space-y-3">
                       <div>
                         <label className="block text-xs font-bold text-[#6e685f] dark:text-[#9e978b] mb-1">
-                          رمز المالك الحالي
+                          الرمز الحالي (Current PIN)
                         </label>
                         <input
                           type="password"
+                          inputMode="numeric"
                           value={oldPinInput}
                           onChange={(e) => setOldPinInput(e.target.value)}
-                          placeholder="أدخل الرمز الحالي (الافتراضي 1234)"
+                          placeholder="أدخل رمز المالك الحالي"
                           className="w-full px-3 py-2 rounded-xl border border-[#dedad2] dark:border-[#38342e] bg-transparent text-sm outline-none focus:border-[#c2650a]"
+                          required
                         />
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                           <label className="block text-xs font-bold text-[#6e685f] dark:text-[#9e978b] mb-1">
-                            رمز المالك الجديد
+                            الرمز الجديد (New PIN)
                           </label>
                           <input
                             type="password"
+                            inputMode="numeric"
                             value={newPinInput}
                             onChange={(e) => setNewPinInput(e.target.value)}
-                            placeholder="4 أرقام أو حروف على الأقل"
+                            placeholder="أدخل 4 أرقام على الأقل"
                             className="w-full px-3 py-2 rounded-xl border border-[#dedad2] dark:border-[#38342e] bg-transparent text-sm outline-none focus:border-[#c2650a]"
+                            required
                           />
                         </div>
 
                         <div>
                           <label className="block text-xs font-bold text-[#6e685f] dark:text-[#9e978b] mb-1">
-                            تأكيد الرمز الجديد
+                            تأكيد الرمز الجديد (Confirm New PIN)
                           </label>
                           <input
                             type="password"
+                            inputMode="numeric"
                             value={confirmNewPinInput}
                             onChange={(e) => setConfirmNewPinInput(e.target.value)}
-                            placeholder="أعد إدخال الرمز الجديد"
+                            placeholder="أعد إدخال الرمز الجديد للتأكيد"
                             className="w-full px-3 py-2 rounded-xl border border-[#dedad2] dark:border-[#38342e] bg-transparent text-sm outline-none focus:border-[#c2650a]"
+                            required
                           />
                         </div>
                       </div>
@@ -3560,7 +3623,7 @@ export default function App() {
         </div>
       )}
 
-      {/* 5. Secure Owner PIN Verification Modal */}
+      {/* 5. Secure Owner PIN Verification & First-Time Setup Modal */}
       {isPinModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
           <div
@@ -3568,18 +3631,24 @@ export default function App() {
               pinShake ? 'animate-shake border-red-500' : ''
             }`}
           >
+            {/* Header */}
             <div className="flex items-center justify-between pb-3 border-b border-[#dedad2] dark:border-[#38342e] mb-4">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-[#c2650a] dark:text-[#ea7a1a] flex items-center justify-center shadow-2xs">
-                  <Lock className="w-4 h-4" />
+                  {isSetupMode ? <KeyRound className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
                 </div>
-                <h3 className="font-bold text-base md:text-lg">صلاحيات المالك</h3>
+                <h3 className="font-bold text-base md:text-lg">
+                  {isSetupMode ? 'تعيين رمز المالك لأول مرة' : 'صلاحيات المالك'}
+                </h3>
               </div>
               <button
                 type="button"
                 onClick={() => {
                   setIsPinModalOpen(false);
                   setEnteredPin('');
+                  setSetupNewPin('');
+                  setSetupConfirmPin('');
+                  setSetupStep(1);
                   setPinError('');
                   setPendingAction(null);
                 }}
@@ -3590,19 +3659,57 @@ export default function App() {
               </button>
             </div>
 
+            {/* First-Time Setup Step Indicator */}
+            {isSetupMode && (
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <div
+                  className={`flex-1 py-1 px-2 rounded-lg text-xs font-bold text-center border transition ${
+                    setupStep === 1
+                      ? 'bg-amber-100 dark:bg-amber-950/60 border-amber-300 dark:border-amber-800 text-[#c2650a] dark:text-[#ea7a1a]'
+                      : 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
+                  }`}
+                >
+                  1. الرمز الجديد {setupStep > 1 && '✓'}
+                </div>
+                <div
+                  className={`flex-1 py-1 px-2 rounded-lg text-xs font-bold text-center border transition ${
+                    setupStep === 2
+                      ? 'bg-amber-100 dark:bg-amber-950/60 border-amber-300 dark:border-amber-800 text-[#c2650a] dark:text-[#ea7a1a]'
+                      : 'bg-[#f5f4f0] dark:bg-[#141311] border-[#dedad2] dark:border-[#38342e] text-[#6e685f] dark:text-[#9e978b]'
+                  }`}
+                >
+                  2. تأكيد الرمز
+                </div>
+              </div>
+            )}
+
+            {/* Prompt Description */}
             <div className="text-center mb-4">
               <h4 className="font-bold text-sm md:text-base text-[#1a1816] dark:text-[#f3efe9]">
-                {pinPromptTitle}
+                {isSetupMode
+                  ? setupStep === 1
+                    ? 'أدخل رمز مرور جديد (4 أرقام)'
+                    : 'أعد إدخال الرمز للتأكيد'
+                  : pinPromptTitle}
               </h4>
               <p className="text-xs text-[#6e685f] dark:text-[#9e978b] mt-1">
-                {pinPromptDescription}
+                {isSetupMode
+                  ? setupStep === 1
+                    ? 'لحماية الأرباح والتقارير، قم بإنشاء رمز سري خاص بك'
+                    : 'تأكد من مطابقة الرمز لمنع حدوث أي خطأ'
+                  : pinPromptDescription}
               </p>
             </div>
 
-            {/* Visual PIN Dots Indicator */}
+            {/* Visual PIN Dots Indicator (4 Dots) */}
             <div className="flex justify-center items-center gap-3.5 mb-4">
               {[0, 1, 2, 3].map((idx) => {
-                const isFilled = enteredPin.length > idx;
+                const currentVal = isSetupMode
+                  ? setupStep === 1
+                    ? setupNewPin
+                    : setupConfirmPin
+                  : enteredPin;
+                const isFilled = currentVal.length > idx;
                 return (
                   <div
                     key={idx}
@@ -3616,11 +3723,19 @@ export default function App() {
               })}
             </div>
 
-            {/* PIN Hidden/Masked Input with Keyboard Support */}
+            {/* Masked Password Input (Supports Physical Keyboard on Desktop) */}
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                handleVerifyPin();
+                if (isSetupMode) {
+                  if (setupStep === 1) {
+                    handleSetupStep1(setupNewPin);
+                  } else {
+                    handleSetupStep2(setupConfirmPin);
+                  }
+                } else {
+                  handleVerifyPin();
+                }
               }}
               className="space-y-3"
             >
@@ -3628,18 +3743,39 @@ export default function App() {
                 type="password"
                 inputMode="numeric"
                 pattern="[0-9]*"
-                maxLength={8}
-                value={enteredPin}
+                maxLength={4}
+                value={
+                  isSetupMode
+                    ? setupStep === 1
+                      ? setupNewPin
+                      : setupConfirmPin
+                    : enteredPin
+                }
                 onChange={(e) => {
-                  const val = e.target.value.replace(/[^0-9]/g, '');
-                  setEnteredPin(val);
+                  const val = e.target.value.replace(/[^0-9]/g, '').slice(0, 4);
                   setPinError('');
-                  if (val.length === ownerPin.length) {
-                    handleVerifyPin(val);
+
+                  if (isSetupMode) {
+                    if (setupStep === 1) {
+                      setSetupNewPin(val);
+                      if (val.length === 4) {
+                        handleSetupStep1(val);
+                      }
+                    } else {
+                      setSetupConfirmPin(val);
+                      if (val.length === 4) {
+                        handleSetupStep2(val);
+                      }
+                    }
+                  } else {
+                    setEnteredPin(val);
+                    if (val.length === 4) {
+                      handleVerifyPin(val);
+                    }
                   }
                 }}
-                placeholder="أدخل رمز المرور..."
-                className="w-full text-center text-xl tracking-[0.4em] font-bold py-2 px-3 rounded-xl border border-[#dedad2] dark:border-[#38342e] bg-[#f5f4f0] dark:bg-[#141311] outline-none focus:border-[#c2650a]"
+                placeholder="••••"
+                className="w-full text-center text-2xl tracking-[0.4em] font-bold py-2 px-3 rounded-xl border border-[#dedad2] dark:border-[#38342e] bg-[#f5f4f0] dark:bg-[#141311] outline-none focus:border-[#c2650a]"
                 autoFocus
               />
 
@@ -3650,13 +3786,21 @@ export default function App() {
                     key={num}
                     type="button"
                     onClick={() => {
-                      const next = enteredPin + String(num);
-                      if (next.length <= 8) {
-                        setEnteredPin(next);
-                        setPinError('');
-                        if (next.length === ownerPin.length) {
-                          handleVerifyPin(next);
+                      setPinError('');
+                      if (isSetupMode) {
+                        if (setupStep === 1) {
+                          const next = (setupNewPin + String(num)).slice(0, 4);
+                          setSetupNewPin(next);
+                          if (next.length === 4) handleSetupStep1(next);
+                        } else {
+                          const next = (setupConfirmPin + String(num)).slice(0, 4);
+                          setSetupConfirmPin(next);
+                          if (next.length === 4) handleSetupStep2(next);
                         }
+                      } else {
+                        const next = (enteredPin + String(num)).slice(0, 4);
+                        setEnteredPin(next);
+                        if (next.length === 4) handleVerifyPin(next);
                       }
                     }}
                     className="h-12 rounded-xl border border-[#dedad2] dark:border-[#38342e] bg-white dark:bg-[#1e1c19] text-base md:text-lg font-bold hover:bg-[#eae7e0] dark:hover:bg-[#282521] active:scale-95 transition shadow-2xs flex items-center justify-center"
@@ -3664,37 +3808,61 @@ export default function App() {
                     {num}
                   </button>
                 ))}
+
+                {/* Clear Button */}
                 <button
                   type="button"
                   onClick={() => {
-                    setEnteredPin('');
                     setPinError('');
+                    if (isSetupMode) {
+                      if (setupStep === 1) setSetupNewPin('');
+                      else setSetupConfirmPin('');
+                    } else {
+                      setEnteredPin('');
+                    }
                   }}
                   className="h-12 rounded-xl border border-[#dedad2] dark:border-[#38342e] bg-[#f5f4f0] dark:bg-[#141311] text-xs font-bold hover:bg-[#eae7e0] dark:hover:bg-[#282521] active:scale-95 transition flex items-center justify-center text-[#6e685f]"
                 >
                   مسح
                 </button>
+
+                {/* Zero Button */}
                 <button
                   type="button"
                   onClick={() => {
-                    const next = enteredPin + '0';
-                    if (next.length <= 8) {
-                      setEnteredPin(next);
-                      setPinError('');
-                      if (next.length === ownerPin.length) {
-                        handleVerifyPin(next);
+                    setPinError('');
+                    if (isSetupMode) {
+                      if (setupStep === 1) {
+                        const next = (setupNewPin + '0').slice(0, 4);
+                        setSetupNewPin(next);
+                        if (next.length === 4) handleSetupStep1(next);
+                      } else {
+                        const next = (setupConfirmPin + '0').slice(0, 4);
+                        setSetupConfirmPin(next);
+                        if (next.length === 4) handleSetupStep2(next);
                       }
+                    } else {
+                      const next = (enteredPin + '0').slice(0, 4);
+                      setEnteredPin(next);
+                      if (next.length === 4) handleVerifyPin(next);
                     }
                   }}
                   className="h-12 rounded-xl border border-[#dedad2] dark:border-[#38342e] bg-white dark:bg-[#1e1c19] text-base md:text-lg font-bold hover:bg-[#eae7e0] dark:hover:bg-[#282521] active:scale-95 transition shadow-2xs flex items-center justify-center"
                 >
                   0
                 </button>
+
+                {/* Backspace Button */}
                 <button
                   type="button"
                   onClick={() => {
-                    setEnteredPin((prev) => prev.slice(0, -1));
                     setPinError('');
+                    if (isSetupMode) {
+                      if (setupStep === 1) setSetupNewPin((prev) => prev.slice(0, -1));
+                      else setSetupConfirmPin((prev) => prev.slice(0, -1));
+                    } else {
+                      setEnteredPin((prev) => prev.slice(0, -1));
+                    }
                   }}
                   className="h-12 rounded-xl border border-[#dedad2] dark:border-[#38342e] bg-[#f5f4f0] dark:bg-[#141311] text-sm font-bold hover:bg-[#eae7e0] dark:hover:bg-[#282521] active:scale-95 transition flex items-center justify-center text-red-500"
                   title="حذف آخر رقم"
@@ -3703,22 +3871,40 @@ export default function App() {
                 </button>
               </div>
 
+              {/* Error Notification */}
               {pinError && (
-                <div className="p-2 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 text-xs font-bold text-center">
+                <div className="p-2 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 text-xs font-bold text-center animate-in fade-in">
                   {pinError}
                 </div>
               )}
 
-              <div className="text-[11px] text-center text-[#6e685f] dark:text-[#9e978b] pt-1">
-                الرمز الافتراضي للنظام هو: <strong className="font-mono text-[#c2650a] dark:text-[#ea7a1a]">1234</strong>
-              </div>
+              {/* Setup Mode Back to Step 1 Button */}
+              {isSetupMode && setupStep === 2 && (
+                <div className="text-center pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSetupStep(1);
+                      setSetupConfirmPin('');
+                      setPinError('');
+                    }}
+                    className="text-xs text-[#c2650a] dark:text-[#ea7a1a] hover:underline font-bold"
+                  >
+                    ← العودة لتعديل الرمز المكتوب
+                  </button>
+                </div>
+              )}
 
+              {/* Action Buttons */}
               <div className="flex gap-2 pt-2 border-t border-[#dedad2] dark:border-[#38342e]">
                 <button
                   type="button"
                   onClick={() => {
                     setIsPinModalOpen(false);
                     setEnteredPin('');
+                    setSetupNewPin('');
+                    setSetupConfirmPin('');
+                    setSetupStep(1);
                     setPinError('');
                     setPendingAction(null);
                   }}
@@ -3730,7 +3916,7 @@ export default function App() {
                   type="submit"
                   className="flex-1 py-2.5 rounded-xl bg-[#c2650a] hover:bg-[#a85406] dark:bg-[#ea7a1a] text-white font-bold text-xs md:text-sm shadow-sm transition active:scale-95"
                 >
-                  تأكيد الدخول
+                  {isSetupMode ? (setupStep === 1 ? 'التالي' : 'حفظ الرمز') : 'تأكيد الدخول'}
                 </button>
               </div>
             </form>
