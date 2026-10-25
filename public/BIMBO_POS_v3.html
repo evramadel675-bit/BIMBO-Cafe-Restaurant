@@ -519,6 +519,62 @@
       </div>`);
   }
 
+  /* Owner PIN Security & Safe Mode */
+  let isOwnerAuth = false;
+  const getOwnerPin = () => {
+    try {
+      return localStorage.getItem('bimbo_owner_pin') || '1234';
+    } catch(e) {
+      return '1234';
+    }
+  };
+
+  function promptPin(action, title = 'أدخل كلمة مرور المالك للمتابعة', desc = 'هذا القسم محمي ويتطلب صلاحيات المالك') {
+    if (isOwnerAuth) {
+      if (typeof action === 'function') action();
+      return;
+    }
+    const html = `
+      <div style="text-align:center;margin-bottom:14px">
+        <div style="width:48px;height:48px;border-radius:14px;background:var(--warn-soft);color:var(--warn);display:inline-flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:1.4rem">🔒</div>
+        <h3 style="margin-bottom:4px">${esc(title)}</h3>
+        <p class="sub" style="font-size:.85rem">${esc(desc)}</p>
+      </div>
+      <form id="pin-form" style="display:flex;flex-direction:column;gap:10px">
+        <input type="password" id="pin-val" name="p" inputmode="numeric" pattern="[0-9]*" maxlength="8" placeholder="••••" style="text-align:center;font-size:1.6rem;letter-spacing:.3em;padding:8px;border:1px solid var(--line);border-radius:12px;background:var(--surface2);outline:none;width:100%" autofocus>
+        <div id="pin-err" style="display:none;color:var(--bad);font-weight:700;font-size:.82rem;text-align:center">كلمة المرور غير صحيحة! يرجى المحاولة مرة أخرى</div>
+        <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:6px;margin-block:4px">
+          ${[1,2,3,4,5,6,7,8,9].map(n => `<button type="button" class="btn" data-act="pin-key" data-k="${n}" style="height:44px;font-size:1.15rem;font-weight:700">${n}</button>`).join('')}
+          <button type="button" class="btn" data-act="pin-clear" style="height:44px;font-size:.82rem;color:var(--muted)">مسح</button>
+          <button type="button" class="btn" data-act="pin-key" data-k="0" style="height:44px;font-size:1.15rem;font-weight:700">0</button>
+          <button type="button" class="btn" data-act="pin-back" style="height:44px;font-size:1rem;color:var(--bad)">⌫</button>
+        </div>
+        <div style="text-align:center;font-size:.78rem;color:var(--muted)">الرمز الافتراضي للنظام هو: <strong style="color:var(--accent)">1234</strong></div>
+        <div class="acts" style="margin-top:6px">
+          <button type="button" class="btn" data-act="mclose">إلغاء</button>
+          <button type="submit" class="btn pri" style="font-weight:700">تأكيد الدخول</button>
+        </div>
+      </form>
+    `;
+    modal(html, (fd) => {
+      const val = fd ? String(fd.get('p') || '').trim() : '';
+      const fallbackVal = $('#pin-val') ? $('#pin-val').value.trim() : '';
+      const pinToTest = val || fallbackVal;
+      if (pinToTest === getOwnerPin()) {
+        isOwnerAuth = true;
+        closeModal();
+        toast('تم التحقق بنجاح وتفعيل وضع المالك');
+        renderShell();
+        if (typeof action === 'function') action();
+      } else {
+        const err = $('#pin-err');
+        if (err) err.style.display = 'block';
+        const inp = $('#pin-val');
+        if (inp) { inp.value = ''; inp.focus(); }
+      }
+    });
+  }
+
   /* Theme Sync & Initialization */
   function applyTheme(isDark) {
     document.documentElement.classList.toggle('dark', isDark);
@@ -559,6 +615,15 @@
         </div>
       </div>
       <div class="row">
+        ${isOwnerAuth ? `
+          <button type="button" class="btn" data-act="owner-lock" style="padding:6px 12px;font-size:.85rem;font-weight:700;color:var(--good);border-color:var(--good)" title="قفل وضع المالك">
+            🔓 المالك متصل (قفل)
+          </button>
+        ` : `
+          <button type="button" class="btn" data-act="owner-login" style="padding:6px 12px;font-size:.85rem;font-weight:700" title="دخول المالك">
+            🔒 دخول المالك
+          </button>
+        `}
         <button type="button" class="btn" data-act="theme" style="padding:6px 12px;font-size:.85rem;font-weight:700" title="تبديل الوضع">
           ${isDark ? '☀️ وضع نهاري' : '🌙 وضع ليلي'}
         </button>
@@ -932,6 +997,17 @@
     const cats = ['الكل', ...new Set(S.items.map(i => i.category || i.cat || 'عام'))];
 
     return `
+      ${isOwnerAuth ? `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1px solid rgba(26,127,76,0.3);border-radius:12px;background:var(--good-soft);color:var(--good);margin-bottom:14px;font-size:.85rem">
+          <span style="font-weight:700">🔓 صلاحيات المالك مفعّلة · يمكنك إضافة وتعديل وحذف الأصناف واستيراد وتصدير الإكسيل</span>
+          <button type="button" class="btn" data-act="owner-lock" style="padding:4px 10px;font-size:.8rem">قفل المالك 🔒</button>
+        </div>
+      ` : `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1px solid rgba(194,101,10,0.3);border-radius:12px;background:var(--warn-soft);color:var(--warn);margin-bottom:14px;font-size:.85rem">
+          <span style="font-weight:700">🔒 وضع الكاشير (عرض الأسعار فقط) · يتطلب رمز المالك للإضافة أو التعديل أو الحذف أو الاستيراد</span>
+          <button type="button" class="btn pri" data-act="owner-login" style="padding:4px 10px;font-size:.8rem">دخول المالك 🔓</button>
+        </div>
+      `}
       <div class="phead">
         <div>
           <h1>قائمة المنيو والأسعار</h1>
@@ -1542,6 +1618,32 @@
 
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px;align-items:start">
         <div style="display:flex;flex-direction:column;gap:18px">
+          <!-- Owner PIN Security Management Card -->
+          <div class="card" style="border:1px solid var(--accent);box-shadow:0 2px 8px rgba(194,101,10,0.1)">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <h3 style="display:flex;align-items:center;gap:6px">🔐 حماية وأمان المالك (رمز PIN)</h3>
+              <span class="pill good">نظام الحماية مفعّل</span>
+            </div>
+            <p class="sub" style="margin-bottom:12px">الرمز الافتراضي: <strong>1234</strong>. يمكنك تغييره هنا لحماية التقارير والأسعار.</p>
+            <form data-act="form-change-pin" style="display:flex;flex-direction:column;gap:10px">
+              <label class="f">رمز المالك الحالي
+                <input type="password" id="set-old-pin" placeholder="الرمز الحالي (الافتراضي 1234)" required>
+              </label>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <label class="f">الرمز الجديد
+                  <input type="password" id="set-new-pin" placeholder="4 أرقام أو أكثر" required>
+                </label>
+                <label class="f">تأكيد الرمز الجديد
+                  <input type="password" id="set-confirm-pin" placeholder="أعد إدخال الرمز" required>
+                </label>
+              </div>
+              <div class="acts" style="margin-top:6px;justify-content:flex-start">
+                <button type="submit" class="btn pri">حفظ وتحديث رمز المرور</button>
+                <button type="button" class="btn" data-act="owner-lock">قفل الجلسة فوراً 🔒</button>
+              </div>
+            </form>
+          </div>
+
           <div class="card">
             <h3 style="margin-bottom:12px">بيانات الكرفان / النشاط التجاري</h3>
             <div class="fg">
@@ -1677,13 +1779,61 @@
       toast(!isDark ? 'تم تفعيل الوضع الليلي' : 'تم تفعيل الوضع النهاري');
     },
     nav(el) {
-      ui.view = el.dataset.v;
+      const v = el.dataset.v;
+      if ((v === 'reports' || v === 'settings') && !isOwnerAuth) {
+        promptPin(() => {
+          ui.view = v;
+          ui.ctx = null;
+          ui.editTables = false;
+          ui.otab = 'menu';
+          ui.q = '';
+          render();
+          scrollTo(0, 0);
+        }, v === 'reports' ? 'الدخول إلى التقارير المالية' : 'الدخول إلى إعدادات النظام');
+        return;
+      }
+      ui.view = v;
       ui.ctx = ui.view === 'take' ? { kind: 'take' } : null;
       ui.editTables = false;
       ui.otab = 'menu';
       ui.q = '';
       render();
       scrollTo(0, 0);
+    },
+    'owner-lock'() {
+      isOwnerAuth = false;
+      toast('تم قفل وضع المالك والعودة لوضع الكاشير');
+      if (ui.view === 'reports' || ui.view === 'settings') {
+        ui.view = 'tables';
+        ui.ctx = null;
+      }
+      render();
+    },
+    'owner-login'() {
+      promptPin(() => render(), 'تسجيل دخول المالك', 'أدخل رمز PIN لتفعيل كافة صلاحيات المالك');
+    },
+    'pin-key'(el) {
+      const inp = $('#pin-val');
+      if (inp && inp.value.length < 8) {
+        inp.value += el.dataset.k;
+        const err = $('#pin-err');
+        if (err) err.style.display = 'none';
+        if (inp.value.length === getOwnerPin().length && inp.value === getOwnerPin()) {
+          if (typeof modalSubmit === 'function') modalSubmit(new FormData($('#pin-form')));
+        }
+      }
+    },
+    'pin-clear'() {
+      const inp = $('#pin-val');
+      if (inp) {
+        inp.value = '';
+        const err = $('#pin-err');
+        if (err) err.style.display = 'none';
+      }
+    },
+    'pin-back'() {
+      const inp = $('#pin-val');
+      if (inp) inp.value = inp.value.slice(0, -1);
     },
     'open-table'(el) {
       ui.ctx = { kind: 'table', id: el.dataset.id };
@@ -1818,29 +1968,60 @@
       [S.tables[i], S.tables[j]] = [S.tables[j], S.tables[i]];
       save(); render();
     },
-    'new-item': () => itemModal(),
-    'edit-item': el => itemModal(el.dataset.id),
-    // Working Menu Item Delete with In-App Confirm Dialog
+    'new-item'() {
+      if (!isOwnerAuth) {
+        promptPin(() => itemModal(), 'إضافة صنف جديد للمنيو', 'إضافة أصناف جديدة تتطلب رمز مرور المالك');
+      } else {
+        itemModal();
+      }
+    },
+    'edit-item'(el) {
+      if (!isOwnerAuth) {
+        promptPin(() => itemModal(el.dataset.id), 'تعديل بيانات الصنف والأسعار', 'تعديل أصناف المنيو يتطلب رمز مرور المالك');
+      } else {
+        itemModal(el.dataset.id);
+      }
+    },
+    // Working Menu Item Delete with Owner PIN and In-App Confirm Dialog
     'del-item'(el) {
       const it = S.items.find(x => x.id === el.dataset.id);
       if (!it) return;
-      ask(`هل تريد حذف صنف «${esc(it.name)}» من المنيو نهائياً؟`, 'تأكيد حذف الصنف', () => {
-        const idx = S.items.indexOf(it);
-        if (idx > -1) {
-          S.items.splice(idx, 1);
-          save(); render(); toast(`تم حذف «${it.name}» من المنيو`);
-        }
-      });
+      const doDel = () => {
+        ask(`هل تريد حذف صنف «${esc(it.name)}» من المنيو نهائياً؟`, 'تأكيد حذف الصنف', () => {
+          const idx = S.items.indexOf(it);
+          if (idx > -1) {
+            S.items.splice(idx, 1);
+            save(); render(); toast(`تم حذف «${it.name}» من المنيو`);
+          }
+        });
+      };
+      if (!isOwnerAuth) {
+        promptPin(doDel, 'حذف صنف من المنيو', 'حذف أصناف المنيو يتطلب رمز مرور المالك');
+      } else {
+        doDel();
+      }
     },
     'toggle-item-avail'(el) {
       const it = S.items.find(x => x.id === el.dataset.id);
-      if (it) {
+      if (!it) return;
+      const doToggle = () => {
         it.available = !(it.available !== false);
         save(); render();
         toast(it.available ? `«${it.name}» متاح للطلب الآن` : `«${it.name}» أصبح غير متاح`);
+      };
+      if (!isOwnerAuth) {
+        promptPin(doToggle, 'تغيير حالة توفر الصنف', 'تعديل حالة الصنف يتطلب رمز مرور المالك');
+      } else {
+        doToggle();
       }
     },
-    'export-menu-excel': exportMenuExcel,
+    'export-menu-excel'() {
+      if (!isOwnerAuth) {
+        promptPin(() => exportMenuExcel(), 'تصدير المنيو إلى Excel', 'تصدير بيانات وأسعار المنيو يتطلب رمز مرور المالك');
+      } else {
+        exportMenuExcel();
+      }
+    },
     'export-sales-excel': exportSalesExcel,
     'export-closing-excel': exportClosingExcel,
     // Working Purge Exported Closing Records
@@ -1902,6 +2083,33 @@
 
   document.addEventListener('submit', e => {
     e.preventDefault();
+    if (e.target.dataset.act === 'form-change-pin') {
+      const oldVal = ($('#set-old-pin') ? $('#set-old-pin').value : '').trim();
+      const newVal = ($('#set-new-pin') ? $('#set-new-pin').value : '').trim();
+      const confVal = ($('#set-confirm-pin') ? $('#set-confirm-pin').value : '').trim();
+      if (oldVal !== getOwnerPin()) {
+        toast('خطأ: رمز المالك الحالي غير صحيح!');
+        return;
+      }
+      if (!newVal || newVal.length < 4) {
+        toast('خطأ: يجب أن يتكون الرمز الجديد من 4 أرقام أو حروف على الأقل');
+        return;
+      }
+      if (newVal !== confVal) {
+        toast('خطأ: تأكيد الرمز غير متطابق مع الرمز الجديد');
+        return;
+      }
+      try {
+        localStorage.setItem('bimbo_owner_pin', newVal);
+        toast('تم تغيير رمز مرور المالك بنجاح!');
+        if ($('#set-old-pin')) $('#set-old-pin').value = '';
+        if ($('#set-new-pin')) $('#set-new-pin').value = '';
+        if ($('#set-confirm-pin')) $('#set-confirm-pin').value = '';
+      } catch(err) {
+        toast('حدث خطأ أثناء حفظ الرمز الجديد');
+      }
+      return;
+    }
     if (typeof modalSubmit === 'function') modalSubmit(new FormData(e.target));
   });
 
@@ -1950,11 +2158,21 @@
       const m = S.settings.paymentMethods.find(x => x.id === id);
       if (m) { m.active = t.checked; save(); toast('تم تحديث طرق الدفع'); }
     } else if (t.dataset.act === 'import-menu-excel' && t.files[0]) {
-      handleMenuImport(t.files[0]);
+      const file = t.files[0];
       t.value = '';
+      if (!isOwnerAuth) {
+        promptPin(() => handleMenuImport(file), 'استيراد منيو جديد من Excel', 'استيراد وتحديث المنيو يتطلب رمز مرور المالك');
+      } else {
+        handleMenuImport(file);
+      }
     } else if (t.dataset.act === 'import-sales-excel' && t.files[0]) {
-      handleSalesImport(t.files[0]);
+      const file = t.files[0];
       t.value = '';
+      if (!isOwnerAuth) {
+        promptPin(() => handleSalesImport(file), 'استيراد سجل فواتير من Excel', 'دمج واستيراد المبيعات يتطلب رمز مرور المالك');
+      } else {
+        handleSalesImport(file);
+      }
     }
   });
 

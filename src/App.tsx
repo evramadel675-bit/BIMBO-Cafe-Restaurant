@@ -29,6 +29,9 @@ import {
   FileSpreadsheet,
   Calendar,
   Lock,
+  Unlock,
+  KeyRound,
+  ShieldCheck,
   AlertTriangle,
   Search
 } from 'lucide-react';
@@ -458,6 +461,109 @@ export default function App() {
   });
 
   const [lastFinishedReceipt, setLastFinishedReceipt] = useState<string | null>(null);
+
+  // Owner Authentication & Cashier Safe Mode
+  const OWNER_PIN_STORAGE_KEY = 'bimbo_owner_pin';
+  const DEFAULT_OWNER_PIN = '1234';
+
+  const [isOwnerAuthenticated, setIsOwnerAuthenticated] = useState<boolean>(false);
+  const [ownerPin, setOwnerPin] = useState<string>(() => {
+    try {
+      return localStorage.getItem('bimbo_owner_pin') || DEFAULT_OWNER_PIN;
+    } catch {
+      return DEFAULT_OWNER_PIN;
+    }
+  });
+
+  // Owner PIN Modal State
+  const [isPinModalOpen, setIsPinModalOpen] = useState<boolean>(false);
+  const [pinPromptTitle, setPinPromptTitle] = useState<string>('أدخل كلمة مرور المالك للمتابعة');
+  const [pinPromptDescription, setPinPromptDescription] = useState<string>('هذا القسم محمي ويتطلب صلاحيات المالك');
+  const [enteredPin, setEnteredPin] = useState<string>('');
+  const [pinError, setPinError] = useState<string>('');
+  const [pinShake, setPinShake] = useState<boolean>(false);
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+
+  // Settings PIN Change State
+  const [oldPinInput, setOldPinInput] = useState<string>('');
+  const [newPinInput, setNewPinInput] = useState<string>('');
+  const [confirmNewPinInput, setConfirmNewPinInput] = useState<string>('');
+  const [pinChangeError, setPinChangeError] = useState<string>('');
+  const [pinChangeSuccess, setPinChangeSuccess] = useState<string>('');
+
+  const requireOwnerAuth = (action: () => void, title = 'أدخل كلمة مرور المالك للمتابعة', desc = 'هذا القسم محمي ويتطلب صلاحيات المالك') => {
+    if (isOwnerAuthenticated) {
+      action();
+      return;
+    }
+    setPinPromptTitle(title);
+    setPinPromptDescription(desc);
+    setEnteredPin('');
+    setPinError('');
+    setPinShake(false);
+    setPendingAction(() => action);
+    setIsPinModalOpen(true);
+  };
+
+  const handleVerifyPin = (pinToTest?: string) => {
+    const pin = pinToTest !== undefined ? pinToTest : enteredPin;
+    if (pin === ownerPin) {
+      setIsOwnerAuthenticated(true);
+      setIsPinModalOpen(false);
+      setEnteredPin('');
+      setPinError('');
+      showToast('تم التحقق بنجاح وتفعيل وضع المالك');
+      if (pendingAction) {
+        const act = pendingAction;
+        setPendingAction(null);
+        act();
+      }
+    } else {
+      setPinError('كلمة المرور غير صحيحة! يرجى المحاولة مرة أخرى');
+      setPinShake(true);
+      setTimeout(() => setPinShake(false), 600);
+      setEnteredPin('');
+    }
+  };
+
+  const handleOwnerLock = () => {
+    setIsOwnerAuthenticated(false);
+    showToast('تم قفل وضع المالك والعودة لوضع الكاشير الآمن');
+    if (activeTab === 'reports' || activeTab === 'settings') {
+      setActiveTab('tables');
+    }
+  };
+
+  const handleChangeOwnerPin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPinChangeError('');
+    setPinChangeSuccess('');
+
+    if (oldPinInput !== ownerPin) {
+      setPinChangeError('رمز المالك الحالي غير صحيح');
+      return;
+    }
+    if (!newPinInput || newPinInput.length < 4) {
+      setPinChangeError('يجب أن يتكون الرمز الجديد من 4 أرقام أو حروف على الأقل');
+      return;
+    }
+    if (newPinInput !== confirmNewPinInput) {
+      setPinChangeError('تأكيد الرمز غير متطابق مع الرمز الجديد');
+      return;
+    }
+
+    try {
+      localStorage.setItem(OWNER_PIN_STORAGE_KEY, newPinInput);
+      setOwnerPin(newPinInput);
+      setOldPinInput('');
+      setNewPinInput('');
+      setConfirmNewPinInput('');
+      setPinChangeSuccess('تم تحديث رمز مرور المالك بنجاح!');
+      showToast('تم حفظ رمز مرور المالك الجديد');
+    } catch {
+      setPinChangeError('حدث خطأ أثناء حفظ الرمز الجديد');
+    }
+  };
 
   // Sync Theme to HTML Root & Body
   useEffect(() => {
@@ -1340,6 +1446,37 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Owner Session Indicator & Lock/Unlock Toggle */}
+            {isOwnerAuthenticated ? (
+              <button
+                type="button"
+                onClick={handleOwnerLock}
+                className="px-2.5 sm:px-3 py-1.5 rounded-xl border border-emerald-300 dark:border-emerald-700/60 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition flex items-center gap-1.5 text-xs md:text-sm font-bold shadow-xs active:scale-95"
+                title="وضع المالك نشط · اضغط لقفل الجلسة والعودة لوضع الكاشير"
+              >
+                <Unlock className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span className="hidden sm:inline">المالك متصل (قفل 🔒)</span>
+                <span className="sm:hidden">قفل</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  requireOwnerAuth(
+                    () => showToast('مرحباً بك! تم تفعيل صلاحيات المالك'),
+                    'تسجيل دخول المالك',
+                    'أدخل رمز PIN لتفعيل صلاحيات المالك والوصول للتقارير والإعدادات'
+                  );
+                }}
+                className="px-2.5 sm:px-3 py-1.5 rounded-xl border border-[#dedad2] dark:border-[#38342e] bg-white dark:bg-[#1e1c19] text-[#6e685f] dark:text-[#9e978b] hover:text-[#1a1816] dark:hover:text-[#f3efe9] hover:bg-[#eae7e0] dark:hover:bg-[#282521] transition flex items-center gap-1.5 text-xs md:text-sm font-bold shadow-xs active:scale-95"
+                title="تسجيل دخول المالك"
+              >
+                <Lock className="w-4 h-4 text-[#c2650a]" />
+                <span className="hidden sm:inline">دخول المالك</span>
+                <span className="sm:hidden">دخول</span>
+              </button>
+            )}
+
             {/* Rock-Solid Theme Toggle */}
             <button
               type="button"
@@ -1422,27 +1559,49 @@ export default function App() {
 
           <button
             type="button"
-            onClick={() => setActiveTab('reports')}
+            onClick={() => {
+              requireOwnerAuth(
+                () => setActiveTab('reports'),
+                'الدخول إلى التقارير المالية والأرباح',
+                'تقارير المبيعات وحركات الفواتير وإغلاق الفترات محمية برمز المالك'
+              );
+            }}
             className={`flex flex-col items-center gap-1 p-2 md:p-3 rounded-xl text-xs md:text-sm font-bold transition flex-1 md:flex-none ${
               activeTab === 'reports'
                 ? 'bg-[#fbebd8] dark:bg-[#38240f] text-[#c2650a] dark:text-[#ea7a1a] border border-[#c2650a]/20 shadow-xs'
                 : 'text-[#6e685f] dark:text-[#9e978b] hover:bg-[#eae7e0] dark:hover:bg-[#282521]'
             }`}
           >
-            <BarChart3 className="w-5 h-5 md:w-6 md:h-6" />
+            <div className="relative">
+              <BarChart3 className="w-5 h-5 md:w-6 md:h-6" />
+              {!isOwnerAuthenticated && (
+                <Lock className="w-2.5 h-2.5 absolute -top-1 -right-1.5 text-amber-600 dark:text-amber-400" />
+              )}
+            </div>
             <span>التقارير</span>
           </button>
 
           <button
             type="button"
-            onClick={() => setActiveTab('settings')}
+            onClick={() => {
+              requireOwnerAuth(
+                () => setActiveTab('settings'),
+                'الدخول إلى إعدادات النظام',
+                'تعديل إعدادات الكرفان والضرائب وطرق الدفع والرمز السري محمي برمز المالك'
+              );
+            }}
             className={`flex flex-col items-center gap-1 p-2 md:p-3 rounded-xl text-xs md:text-sm font-bold transition flex-1 md:flex-none ${
               activeTab === 'settings'
                 ? 'bg-[#fbebd8] dark:bg-[#38240f] text-[#c2650a] dark:text-[#ea7a1a] border border-[#c2650a]/20 shadow-xs'
                 : 'text-[#6e685f] dark:text-[#9e978b] hover:bg-[#eae7e0] dark:hover:bg-[#282521]'
             }`}
           >
-            <Settings className="w-5 h-5 md:w-6 md:h-6" />
+            <div className="relative">
+              <Settings className="w-5 h-5 md:w-6 md:h-6" />
+              {!isOwnerAuthenticated && (
+                <Lock className="w-2.5 h-2.5 absolute -top-1 -right-1.5 text-amber-600 dark:text-amber-400" />
+              )}
+            </div>
             <span>الإعدادات</span>
           </button>
         </nav>
@@ -2062,6 +2221,43 @@ export default function App() {
           {/* 3. MENU MANAGEMENT VIEW (Fixed 1 vs 80 Rendering & Sorting Bug) */}
           {activeTab === 'menu' && (
             <div>
+              {/* Cashier / Owner Status Banner for Menu */}
+              {isOwnerAuthenticated ? (
+                <div className="flex items-center justify-between p-2.5 px-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/40 mb-4 text-xs md:text-sm">
+                  <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-200 font-semibold">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span>صلاحيات المالك مفعّلة · يمكنك إضافة وتعديل وحذف الأصناف واستيراد وتصدير الإكسيل</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleOwnerLock}
+                    className="px-2.5 py-1 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200 font-bold text-xs hover:bg-emerald-200 transition"
+                  >
+                    قفل المالك 🔒
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 mb-4 text-xs md:text-sm">
+                  <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200 font-semibold">
+                    <Lock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                    <span>وضع الكاشير (عرض فقط) · يتطلب رمز المالك لإضافة أو تعديل أو حذف الأصناف أو استيراد الإكسيل</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      requireOwnerAuth(
+                        () => showToast('تم تفعيل صلاحيات المالك لتعديل المنيو والأسعار'),
+                        'تفعيل صلاحيات تعديل المنيو',
+                        'أدخل رمز PIN لتفعيل صلاحيات التعديل والحذف والاستيراد'
+                      );
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-[#c2650a] text-white font-bold text-xs shrink-0 shadow-xs hover:bg-[#a85406] active:scale-95 transition"
+                  >
+                    دخول المالك 🔓
+                  </button>
+                </div>
+              )}
+
               <div className="flex items-center justify-between gap-4 flex-wrap mb-5">
                 <div>
                   <h2 className="text-xl md:text-2xl font-bold">قائمة المنيو والأسعار</h2>
@@ -2073,7 +2269,13 @@ export default function App() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <button
                     type="button"
-                    onClick={() => setItemModalData({ isOpen: true, item: null })}
+                    onClick={() => {
+                      requireOwnerAuth(
+                        () => setItemModalData({ isOpen: true, item: null }),
+                        'إضافة صنف جديد للمنيو',
+                        'إضافة أصناف جديدة للمنيو تتطلب رمز مرور المالك'
+                      );
+                    }}
                     className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#c2650a] dark:bg-[#ea7a1a] text-white font-bold text-sm shadow-sm"
                   >
                     <Plus className="w-4 h-4" />
@@ -2082,14 +2284,32 @@ export default function App() {
 
                   <button
                     type="button"
-                    onClick={exportMenuToExcel}
+                    onClick={() => {
+                      requireOwnerAuth(
+                        () => exportMenuToExcel(),
+                        'تصدير المنيو إلى Excel',
+                        'تصدير بيانات وأسعار المنيو يتطلب رمز مرور المالك'
+                      );
+                    }}
                     className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-[#1e1c19] border border-[#dedad2] dark:border-[#38342e] font-semibold text-xs md:text-sm hover:border-[#c2650a]"
                   >
                     <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
                     تصدير إكسيل (.xlsx)
                   </button>
 
-                  <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-[#1e1c19] border border-[#dedad2] dark:border-[#38342e] font-semibold text-xs md:text-sm hover:border-[#c2650a] cursor-pointer">
+                  <label
+                    onClick={(e) => {
+                      if (!isOwnerAuthenticated) {
+                        e.preventDefault();
+                        requireOwnerAuth(
+                          () => showToast('تم تفعيل وضع المالك! يمكنك الآن اختيار ملف الإكسيل للاستيراد'),
+                          'استيراد منيو جديد من Excel',
+                          'استيراد وتحديث أصناف المنيو يتطلب رمز مرور المالك'
+                        );
+                      }
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-[#1e1c19] border border-[#dedad2] dark:border-[#38342e] font-semibold text-xs md:text-sm hover:border-[#c2650a] cursor-pointer"
+                  >
                     <Upload className="w-4 h-4 text-blue-600" />
                     استيراد إكسيل
                     <input
@@ -2214,11 +2434,17 @@ export default function App() {
                             <button
                               type="button"
                               onClick={() => {
-                                setItems((prev) =>
-                                  prev.map((i) => (i.id === item.id ? { ...i, available: !i.available } : i))
-                                );
-                                showToast(
-                                  !item.available ? `«${item.name}» أصبح متاحاً الآن` : `«${item.name}» أصبح غير متاح`
+                                requireOwnerAuth(
+                                  () => {
+                                    setItems((prev) =>
+                                      prev.map((i) => (i.id === item.id ? { ...i, available: !i.available } : i))
+                                    );
+                                    showToast(
+                                      !item.available ? `«${item.name}» أصبح متاحاً الآن` : `«${item.name}» أصبح غير متاح`
+                                    );
+                                  },
+                                  'تغيير حالة توفر الصنف',
+                                  `تغيير حالة «${item.name}» يتطلب رمز مرور المالك`
                                 );
                               }}
                               className={`min-h-[40px] px-3.5 py-1.5 rounded-full text-xs font-bold transition active:scale-95 ${
@@ -2234,7 +2460,13 @@ export default function App() {
                             <div className="flex items-center justify-end gap-1.5">
                               <button
                                 type="button"
-                                onClick={() => setItemModalData({ isOpen: true, item })}
+                                onClick={() => {
+                                  requireOwnerAuth(
+                                    () => setItemModalData({ isOpen: true, item }),
+                                    'تعديل بيانات الصنف والأسعار',
+                                    `تعديل «${item.name}» وسعر البيع يتطلب رمز مرور المالك`
+                                  );
+                                }}
                                 className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-xl border border-[#dedad2] dark:border-[#38342e] hover:bg-[#eae7e0] dark:hover:bg-[#282521] flex items-center justify-center active:scale-95 transition"
                                 title="تعديل الصنف"
                                 aria-label="تعديل الصنف"
@@ -2243,7 +2475,13 @@ export default function App() {
                               </button>
                               <button
                                 type="button"
-                                onClick={() => handleDeleteMenuItem(item)}
+                                onClick={() => {
+                                  requireOwnerAuth(
+                                    () => handleDeleteMenuItem(item),
+                                    'حذف صنف من المنيو',
+                                    `حذف «${item.name}» من المنيو نهائياً يتطلب رمز مرور المالك`
+                                  );
+                                }}
                                 className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-xl border border-red-200 dark:border-red-900/40 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center justify-center active:scale-95 transition"
                                 title="حذف الصنف من المنيو"
                                 aria-label="حذف الصنف من المنيو"
@@ -2617,6 +2855,105 @@ export default function App() {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                 <div className="space-y-5">
+                  {/* Owner PIN Protection & Management */}
+                  <div className="p-5 rounded-2xl bg-white dark:bg-[#1e1c19] border border-[#dedad2] dark:border-[#38342e] shadow-xs">
+                    <div className="flex items-center justify-between gap-3 mb-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-[#c2650a] dark:text-[#ea7a1a] flex items-center justify-center shadow-2xs">
+                          <KeyRound className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-base">حماية وأمان المالك (رمز PIN)</h3>
+                          <p className="text-xs text-[#6e685f] dark:text-[#9e978b]">
+                            قفل وحماية التقارير والإعدادات وتعديل قائمة المنيو
+                          </p>
+                        </div>
+                      </div>
+                      <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 flex items-center gap-1 shadow-2xs">
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        نظام الحماية مفعّل
+                      </span>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-[#f5f4f0] dark:bg-[#141311] border border-[#dedad2] dark:border-[#38342e] text-xs text-[#6e685f] dark:text-[#9e978b] mb-4 space-y-1">
+                      <p>• الرمز الافتراضي للنظام هو: <strong className="text-[#1a1816] dark:text-[#f3efe9]">1234</strong>.</p>
+                      <p>• يمكنك تغيير الرمز أدناه للحفاظ على خصوصية أرباح ومبيعات الكرفان من أعين الكاشير.</p>
+                    </div>
+
+                    <form onSubmit={handleChangeOwnerPin} className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-bold text-[#6e685f] dark:text-[#9e978b] mb-1">
+                          رمز المالك الحالي
+                        </label>
+                        <input
+                          type="password"
+                          value={oldPinInput}
+                          onChange={(e) => setOldPinInput(e.target.value)}
+                          placeholder="أدخل الرمز الحالي (الافتراضي 1234)"
+                          className="w-full px-3 py-2 rounded-xl border border-[#dedad2] dark:border-[#38342e] bg-transparent text-sm outline-none focus:border-[#c2650a]"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-bold text-[#6e685f] dark:text-[#9e978b] mb-1">
+                            رمز المالك الجديد
+                          </label>
+                          <input
+                            type="password"
+                            value={newPinInput}
+                            onChange={(e) => setNewPinInput(e.target.value)}
+                            placeholder="4 أرقام أو حروف على الأقل"
+                            className="w-full px-3 py-2 rounded-xl border border-[#dedad2] dark:border-[#38342e] bg-transparent text-sm outline-none focus:border-[#c2650a]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-[#6e685f] dark:text-[#9e978b] mb-1">
+                            تأكيد الرمز الجديد
+                          </label>
+                          <input
+                            type="password"
+                            value={confirmNewPinInput}
+                            onChange={(e) => setConfirmNewPinInput(e.target.value)}
+                            placeholder="أعد إدخال الرمز الجديد"
+                            className="w-full px-3 py-2 rounded-xl border border-[#dedad2] dark:border-[#38342e] bg-transparent text-sm outline-none focus:border-[#c2650a]"
+                          />
+                        </div>
+                      </div>
+
+                      {pinChangeError && (
+                        <div className="p-2.5 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 text-xs font-bold">
+                          {pinChangeError}
+                        </div>
+                      )}
+
+                      {pinChangeSuccess && (
+                        <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold">
+                          {pinChangeSuccess}
+                        </div>
+                      )}
+
+                      <div className="flex gap-2 pt-1 flex-wrap">
+                        <button
+                          type="submit"
+                          className="px-4 py-2.5 rounded-xl bg-[#c2650a] hover:bg-[#a85406] dark:bg-[#ea7a1a] text-white font-bold text-xs md:text-sm shadow-xs transition active:scale-95"
+                        >
+                          حفظ وتحديث رمز المرور
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleOwnerLock}
+                          className="px-4 py-2.5 rounded-xl border border-[#dedad2] dark:border-[#38342e] hover:bg-[#eae7e0] dark:hover:bg-[#282521] text-xs md:text-sm font-bold transition flex items-center gap-1.5 active:scale-95"
+                        >
+                          <Lock className="w-4 h-4 text-amber-600" />
+                          قفل جلسة المالك والعودة للكاشير
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+
                   {/* Business Data */}
                   <div className="p-5 rounded-2xl bg-white dark:bg-[#1e1c19] border border-[#dedad2] dark:border-[#38342e] shadow-xs">
                     <h3 className="font-bold text-base mb-3">بيانات الكرفان / النشاط التجاري</h3>
@@ -3219,6 +3556,184 @@ export default function App() {
                 طباعة الفاتورة
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5. Secure Owner PIN Verification Modal */}
+      {isPinModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div
+            className={`bg-white dark:bg-[#1e1c19] border border-[#dedad2] dark:border-[#38342e] rounded-3xl p-6 w-full max-w-sm shadow-2xl transition-transform ${
+              pinShake ? 'animate-shake border-red-500' : ''
+            }`}
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-[#dedad2] dark:border-[#38342e] mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-[#c2650a] dark:text-[#ea7a1a] flex items-center justify-center shadow-2xs">
+                  <Lock className="w-4 h-4" />
+                </div>
+                <h3 className="font-bold text-base md:text-lg">صلاحيات المالك</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsPinModalOpen(false);
+                  setEnteredPin('');
+                  setPinError('');
+                  setPendingAction(null);
+                }}
+                className="p-1 rounded-lg text-[#6e685f] hover:bg-[#eae7e0] dark:hover:bg-[#282521] transition"
+                aria-label="إغلاق"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="text-center mb-4">
+              <h4 className="font-bold text-sm md:text-base text-[#1a1816] dark:text-[#f3efe9]">
+                {pinPromptTitle}
+              </h4>
+              <p className="text-xs text-[#6e685f] dark:text-[#9e978b] mt-1">
+                {pinPromptDescription}
+              </p>
+            </div>
+
+            {/* Visual PIN Dots Indicator */}
+            <div className="flex justify-center items-center gap-3.5 mb-4">
+              {[0, 1, 2, 3].map((idx) => {
+                const isFilled = enteredPin.length > idx;
+                return (
+                  <div
+                    key={idx}
+                    className={`w-4 h-4 rounded-full transition-all duration-150 ${
+                      isFilled
+                        ? 'bg-[#c2650a] dark:bg-[#ea7a1a] scale-125 shadow-xs'
+                        : 'border-2 border-[#dedad2] dark:border-[#38342e] bg-[#f5f4f0] dark:bg-[#141311]'
+                    }`}
+                  />
+                );
+              })}
+            </div>
+
+            {/* PIN Hidden/Masked Input with Keyboard Support */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleVerifyPin();
+              }}
+              className="space-y-3"
+            >
+              <input
+                type="password"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={8}
+                value={enteredPin}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9]/g, '');
+                  setEnteredPin(val);
+                  setPinError('');
+                  if (val.length === ownerPin.length) {
+                    handleVerifyPin(val);
+                  }
+                }}
+                placeholder="أدخل رمز المرور..."
+                className="w-full text-center text-xl tracking-[0.4em] font-bold py-2 px-3 rounded-xl border border-[#dedad2] dark:border-[#38342e] bg-[#f5f4f0] dark:bg-[#141311] outline-none focus:border-[#c2650a]"
+                autoFocus
+              />
+
+              {/* Touch Numeric Keypad */}
+              <div className="grid grid-cols-3 gap-2 my-2 select-none">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                  <button
+                    key={num}
+                    type="button"
+                    onClick={() => {
+                      const next = enteredPin + String(num);
+                      if (next.length <= 8) {
+                        setEnteredPin(next);
+                        setPinError('');
+                        if (next.length === ownerPin.length) {
+                          handleVerifyPin(next);
+                        }
+                      }
+                    }}
+                    className="h-12 rounded-xl border border-[#dedad2] dark:border-[#38342e] bg-white dark:bg-[#1e1c19] text-base md:text-lg font-bold hover:bg-[#eae7e0] dark:hover:bg-[#282521] active:scale-95 transition shadow-2xs flex items-center justify-center"
+                  >
+                    {num}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEnteredPin('');
+                    setPinError('');
+                  }}
+                  className="h-12 rounded-xl border border-[#dedad2] dark:border-[#38342e] bg-[#f5f4f0] dark:bg-[#141311] text-xs font-bold hover:bg-[#eae7e0] dark:hover:bg-[#282521] active:scale-95 transition flex items-center justify-center text-[#6e685f]"
+                >
+                  مسح
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = enteredPin + '0';
+                    if (next.length <= 8) {
+                      setEnteredPin(next);
+                      setPinError('');
+                      if (next.length === ownerPin.length) {
+                        handleVerifyPin(next);
+                      }
+                    }
+                  }}
+                  className="h-12 rounded-xl border border-[#dedad2] dark:border-[#38342e] bg-white dark:bg-[#1e1c19] text-base md:text-lg font-bold hover:bg-[#eae7e0] dark:hover:bg-[#282521] active:scale-95 transition shadow-2xs flex items-center justify-center"
+                >
+                  0
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEnteredPin((prev) => prev.slice(0, -1));
+                    setPinError('');
+                  }}
+                  className="h-12 rounded-xl border border-[#dedad2] dark:border-[#38342e] bg-[#f5f4f0] dark:bg-[#141311] text-sm font-bold hover:bg-[#eae7e0] dark:hover:bg-[#282521] active:scale-95 transition flex items-center justify-center text-red-500"
+                  title="حذف آخر رقم"
+                >
+                  ⌫
+                </button>
+              </div>
+
+              {pinError && (
+                <div className="p-2 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 text-xs font-bold text-center">
+                  {pinError}
+                </div>
+              )}
+
+              <div className="text-[11px] text-center text-[#6e685f] dark:text-[#9e978b] pt-1">
+                الرمز الافتراضي للنظام هو: <strong className="font-mono text-[#c2650a] dark:text-[#ea7a1a]">1234</strong>
+              </div>
+
+              <div className="flex gap-2 pt-2 border-t border-[#dedad2] dark:border-[#38342e]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsPinModalOpen(false);
+                    setEnteredPin('');
+                    setPinError('');
+                    setPendingAction(null);
+                  }}
+                  className="flex-1 py-2.5 rounded-xl border border-[#dedad2] dark:border-[#38342e] font-bold text-xs md:text-sm hover:bg-[#eae7e0] dark:hover:bg-[#282521] transition"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 rounded-xl bg-[#c2650a] hover:bg-[#a85406] dark:bg-[#ea7a1a] text-white font-bold text-xs md:text-sm shadow-sm transition active:scale-95"
+                >
+                  تأكيد الدخول
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
