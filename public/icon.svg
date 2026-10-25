@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="128" fill="#181715"/>
+  <rect x="32" y="32" width="448" height="448" rx="96" fill="url(#bg)" filter="url(#shadow)"/>
+  <g fill="#ffffff" transform="translate(64, 64) scale(0.75)">
+    <!-- Food Truck & Coffee Register Graphic -->
+    <path d="M60 120 C60 90, 85 70, 115 70 L395 70 C425 70, 450 90, 450 120 L450 280 C450 300, 435 320, 410 320 L100 320 C75 320, 60 300, 60 280 Z" opacity="0.95"/>
+    <path d="M100 130 L410 130 L390 230 L120 230 Z" fill="#181715"/>
+    <!-- Service Hatch / Canopy -->
+    <path d="M40 70 L470 70 L440 20 L70 20 Z" fill="#ffffff" opacity="0.9"/>
+    <rect x="180" y="250" width="150" height="70" rx="12" fill="#ea580c"/>
+    <circle cx="140" cy="360" r="48" fill="#181715"/>
+    <circle cx="140" cy="360" r="22" fill="#ffffff"/>
+    <circle cx="370" cy="360" r="48" fill="#181715"/>
+    <circle cx="370" cy="360" r="22" fill="#ffffff"/>
+    <text x="255" y="195" font-family="'Lalezar', sans-serif" font-size="52" fill="#f97316" text-anchor="middle" font-weight="bold">BIMBO</text>
+  </g>
+</svg>

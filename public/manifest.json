@@ -1,0 +1,28 @@
+{
+  "id": "/",
+  "name": "BIMBO POS - نظام كاشير الكرفان والمطاعم",
+  "short_name": "BIMBO POS",
+  "description": "نظام كاشير ونقاط بيع سريع وخفيف للكرفانات والمطاعم مع استيراد وتصدير إكسيل وفواتير مخصصة وتثبيت PWA.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#181715",
+  "theme_color": "#c2650a",
+  "dir": "rtl",
+  "lang": "ar",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

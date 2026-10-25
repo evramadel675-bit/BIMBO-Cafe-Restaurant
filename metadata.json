@@ -1,0 +1,6 @@
+{
+  "name": "BIMBO POS - نظام كرفان ومطاعم حديث",
+  "description": "نظام كاشير ونقاط بيع سريع وخفيف للكرفانات والمطاعم مع استيراد وتصدير إكسيل وفواتير مخصصة وتثبيت PWA.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

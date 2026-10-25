@@ -1,0 +1,1974 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>BIMBO POS - كاشير ونقاط بيع الكرفان</title>
+  <meta name="description" content="نظام نقاط بيع وكاشير متطور للكرفانات والمطاعم والكافيهات بدون تعقيد المخزون، مع استيراد وتصدير إكسيل وإغلاق الفترات المحاسبية وتخصيص الفواتير.">
+  <meta name="theme-color" content="#c2650a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- Embedded Web App Manifest via Base64 Data URI -->
+  <link rel="manifest" href="data:application/manifest+json;base64,ewogICJpZCI6ICIvIiwKICAibmFtZSI6ICJCSU1CTyBQT1MgLSDFqNin2LTYYrNixINin2YTZg9ix2YHYp9mGINmI2KfZhNmF2LfZp9i52YUiLAogICJzaG9ydF9uYW1lIjogIkJJTUJPIFBPUyIsCiAgImRlc2NyaXB0aW9uIjogItmG2LjYp9mFINmD2KfYtNmK2LEg2YjZhtmC2KfYtyDYqNmK2Lkg2LPYsdmK2Lkg2YjYrtmB2YrZgSIsCiAgInN0YXJ0X3VybCI6ICIuLyIsCiAgInNjb3BlIjogIi4vIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAib3JpZW50YXRpb24iOiAiYW55IiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMTQxMzExIiwKICAidGhlbWVfY29sb3IiOiAiI2MyNjUwYSIsCiAgImRpciI6ICJydGwiLAogICJsYW5nIjogImFyIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCNGJXeHVkek1pYUhSMGNEb3ZMM2QzZHk1M015NXZjbWN2TWpBd01DOXpkbWNpSUhaMWJYZENiM0c2SWpBZ01DQTFNVElnTlRFeUlqNDhjbVZqZENCM2FXUjBhRDBpTlRFeUlqQm9aV2duZEQwZk1UVXlJaUJ5ZURFaU1USTRJaUJuYVd4c1BTVXhOREV6TVRFeU9qd3ZZbUZqYXlBNklqTXlJaUI1UFNJek1pSWdkMmxrZEdnOUlqUTBPRGdpYUdWblpyaDBQU0kwTkRnaUlISjRQU0k1TmlJZ1ptbHNiRDBpSTJNeU5qVXdZU0l2UGp4MFpYaDBJRGc5SWpJMk5pSWdlVDA5SWpNd05DSWdabTl1ZEMxZllXMXBiSGs5SW5OaGJuTXRjMlZ5YVdZaUlHWnZibnEtdW1sNlBTSXhNakFpSUdabGJudHhkV2xuYUhROUlsSnZiR1FpSUdaaWJHdzlJalptWm1abVptWWlJSEJsZUhRdFlXNWphRzl5UFNJdGJXUmtiR3hpSWo1Q1NVMTVRVDwvZEdWNGREMDhkTzgyWnl3PSIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIDUxMng1MTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIiwKICAgICAgInB1cnBvc2UiOiAiYW55IG1hc2thYmxlIgogICAgfQogIF0KfQ==">
+
+  <!-- SheetJS (XLSX) CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <!-- Google Fonts: IBM Plex Sans Arabic & Lalezar -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Lalezar&display=swap">
+
+  <style>
+    :root {
+      --bg: #f5f4f0;
+      --surface: #ffffff;
+      --surface2: #eae7e0;
+      --surface3: #dfdbd2;
+      --ink: #1a1816;
+      --muted: #6e685f;
+      --line: #dedad2;
+      --accent: #c2650a;
+      --accent-hover: #a85406;
+      --accent-ink: #ffffff;
+      --accent-soft: #fbebd8;
+      --good: #1a7f4c;
+      --good-soft: #d8f3e5;
+      --warn: #a15c00;
+      --warn-soft: #feeed1;
+      --bad: #b9251c;
+      --bad-soft: #fce1de;
+      --f-display: 'Lalezar', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+      --f-body: 'IBM Plex Sans Arabic', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    html.dark, body.dark, :root[data-theme="dark"] {
+      --bg: #141311;
+      --surface: #1e1c19;
+      --surface2: #282521;
+      --surface3: #34302b;
+      --ink: #f3efe9;
+      --muted: #9e978b;
+      --line: #38342e;
+      --accent: #ea7a1a;
+      --accent-hover: #f18c32;
+      --accent-ink: #191005;
+      --accent-soft: #38240f;
+      --good: #52c98d;
+      --good-soft: #143320;
+      --warn: #e8b04a;
+      --warn-soft: #35280d;
+      --bad: #f47f78;
+      --bad-soft: #381614;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      overflow-x: hidden;
+      width: 100%;
+      max-width: 100vw;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font: 15px/1.5 var(--f-body);
+      font-variant-numeric: tabular-nums;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    button, input, select, textarea { font: inherit; color: inherit; }
+    h1, h2, h3, h4 { font-weight: 700; line-height: 1.25; }
+    h1 { font-size: 1.55rem; }
+    h2 { font-size: 1.25rem; }
+    h3 { font-size: 1.05rem; }
+    .sub { color: var(--muted); font-size: .88rem; margin-top: 2px; }
+    .gut { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+    /* Header */
+    .hdr { position: sticky; top: 0; z-index: 40; background: var(--surface); border-bottom: 1px solid var(--line); box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .hdr-in { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 10px; max-width: 1400px; margin: 0 auto; }
+    .brand { display: flex; align-items: center; gap: 10px; min-width: 0; text-decoration: none; color: inherit; }
+    .logo-badge { font-family: var(--f-display); font-size: 1.5rem; background: var(--accent); color: var(--accent-ink); border-radius: 9px; padding: 5px 12px 3px; letter-spacing: .5px; box-shadow: 0 2px 5px rgba(194,101,10,0.25); }
+    .brand-meta { min-width: 0; }
+    .brand-name { font-weight: 700; font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .brand-loc { font-size: 0.78rem; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+
+    /* Shell & Nav */
+    .shell { display: grid; grid-template-columns: 100px minmax(0, 1fr); gap: 24px; max-width: 1400px; margin: 0 auto; width: 100%; padding-block: 20px 32px; flex: 1; }
+    .nav { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 74px); align-self: start; display: flex; flex-direction: column; gap: 6px; }
+    .nav-btn {
+      position: relative; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 12px 6px;
+      border: 1px solid transparent; background: transparent; border-radius: 14px; color: var(--muted); cursor: pointer;
+      font-size: .8rem; font-weight: 600; transition: all 0.15s ease; min-height: 44px;
+    }
+    .nav-btn:hover { background: var(--surface2); color: var(--ink); }
+    .nav-btn[aria-current="page"] { background: var(--accent-soft); border-color: rgba(194,101,10,0.2); color: var(--accent); font-weight: 700; }
+    .nav-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .main { min-width: 0; }
+
+    /* Common Components */
+    .phead { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 20px; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+      border-radius: 12px; padding: 9px 16px; cursor: pointer; font-weight: 600; min-height: 44px; font-size: .92rem;
+      transition: all 0.15s; white-space: nowrap; user-select: none;
+    }
+    .btn:hover { border-color: var(--muted); background: var(--surface2); }
+    .btn.pri { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); box-shadow: 0 2px 6px rgba(194,101,10,0.25); }
+    .btn.pri:hover { background: var(--accent-hover); }
+    .btn.good { background: var(--good); border-color: var(--good); color: #fff; }
+    .btn.danger { color: var(--bad); border-color: rgba(185,37,28,0.3); }
+    .btn.danger:hover { background: var(--bad-soft); border-color: var(--bad); }
+    .btn.lg { min-height: 52px; font-size: 1.05rem; font-weight: 700; }
+    .btn[disabled] { opacity: .45; cursor: not-allowed; pointer-events: none; }
+    .ibtn {
+      border: 1px solid var(--line); background: var(--surface); border-radius: 12px;
+      min-width: 44px; min-height: 44px; height: 44px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+      transition: all 0.15s; color: inherit; font-size: 1.05rem;
+    }
+    .ibtn:hover { border-color: var(--muted); background: var(--surface2); }
+    .ibtn.danger { color: var(--bad); }
+    .ibtn.danger:hover { background: var(--bad-soft); }
+
+    input, select, textarea {
+      background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+      padding: 10px 14px; min-height: 42px; width: 100%; transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    label.f { display: flex; flex-direction: column; gap: 5px; font-size: .86rem; color: var(--muted); font-weight: 600; }
+    .fg { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 18px; }
+    .pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 99px; font-size: .78rem; font-weight: 700; }
+    .pill.good { background: var(--good-soft); color: var(--good); }
+    .pill.warn { background: var(--warn-soft); color: var(--warn); }
+    .pill.bad { background: var(--bad-soft); color: var(--bad); }
+    .pill.mut { background: var(--surface2); color: var(--muted); }
+    .chip { border: 1px solid var(--line); background: var(--surface); border-radius: 99px; padding: 6px 14px; cursor: pointer; font-size: .84rem; font-weight: 600; transition: all 0.15s; }
+    .chip:hover { border-color: var(--muted); }
+    .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+    /* Tables Grid */
+    .tgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; }
+    .tcard {
+      border: 1px solid var(--line); background: var(--surface); border-radius: 18px; padding: 18px;
+      display: flex; flex-direction: column; justify-content: space-between; min-height: 140px; cursor: pointer;
+      text-align: right; transition: all 0.15s;
+    }
+    .tcard:hover { border-color: var(--accent); }
+    .tcard.busy { background: var(--accent-soft); border-color: rgba(194,101,10,0.35); }
+    .tcard.edit { cursor: grab; }
+    .tcard b { font-size: 1.15rem; }
+    .tcard .tot { font-size: 1.2rem; font-weight: 800; color: var(--accent); margin-top: auto; }
+
+    /* Order Screen Layout & Scrollable Bars */
+    .ocols { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 20px; align-items: start; }
+    .menuc { min-width: 0; }
+    .scroll-wrap { position: relative; display: flex; align-items: center; gap: 8px; width: 100%; }
+    .scroll-btn {
+      width: 40px; height: 40px; min-width: 40px; min-height: 40px;
+      border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+      display: inline-flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
+      transition: all 0.15s; font-weight: 700; font-size: 1.25rem; line-height: 1; user-select: none;
+    }
+    .scroll-btn:hover { background: var(--surface2); border-color: var(--muted); }
+    .scroll-cnt { display: flex; gap: 8px; overflow-x: auto; scroll-behavior: smooth; flex: 1; padding-bottom: 4px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+    .scroll-cnt::-webkit-scrollbar { display: none; }
+    .cats { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }
+    .cats::-webkit-scrollbar { display: none; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+    .tile {
+      background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px;
+      display: flex; flex-direction: column; justify-content: space-between; min-height: 110px; cursor: pointer;
+      text-align: right; transition: all 0.15s;
+    }
+    .tile:hover { border-color: var(--accent); }
+    .tile.unavail { opacity: .55; cursor: not-allowed; background: var(--surface2); }
+    .tile .p { font-weight: 800; color: var(--accent); font-size: 1.05rem; margin-top: 10px; }
+    .unavail-badge { font-size: .75rem; color: var(--bad); font-weight: 700; margin-top: 4px; display: block; }
+
+    /* Cart */
+    .cart { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 74px); display: flex; flex-direction: column; min-height: 480px; max-height: calc(100vh - 100px); }
+    .cart-lines { overflow-y: auto; flex: 1; margin-block: 10px; divide-y: 1px solid var(--line); }
+    .line { padding: 10px 0; display: flex; flex-direction: column; gap: 6px; border-bottom: 1px solid var(--line); }
+    .line-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .line .nm { font-weight: 700; font-size: .95rem; }
+    .line .stp { display: inline-flex; align-items: center; gap: 6px; margin-top: 2px; }
+    .line .stp b { min-width: 32px; text-align: center; font-size: 1rem; }
+    .line input { font-size: .82rem; padding: 6px 10px; min-height: 38px; border-radius: 8px; }
+
+    .sum { display: flex; justify-content: space-between; padding-block: 3px; font-size: .92rem; color: var(--muted); }
+    .sum.big { font-size: 1.25rem; font-weight: 800; color: var(--ink); border-top: 1px dashed var(--line); margin-top: 6px; padding-top: 8px; }
+
+    /* Table & Lists */
+    .tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); -webkit-overflow-scrolling: touch; }
+    table { width: 100%; min-width: 620px; border-collapse: collapse; text-align: right; font-size: .9rem; }
+    table.rep-table { min-width: 700px; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid var(--line); }
+    th { background: var(--surface2); font-weight: 700; color: var(--muted); }
+    td.n { text-align: left; }
+    th.n { text-align: left; }
+    tr:last-child td { border-bottom: none; }
+    .empty { padding: 40px 16px; text-align: center; color: var(--muted); }
+
+    /* Modals & Dialogs */
+    .scrim { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.6); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .dlg { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; width: 95%; max-width: 480px; padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto; }
+    .acts { display: flex; gap: 10px; margin-top: 20px; }
+    .acts .btn { flex: 1; }
+
+    /* Receipt */
+    .receipt { font-family: monospace; font-size: 12px; background: var(--surface2); border: 1px solid var(--line); border-radius: 14px; padding: 16px; white-space: pre-wrap; line-height: 1.5; }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 20px; right: 20px; z-index: 120; background: var(--ink); color: var(--bg); padding: 12px 20px; border-radius: 14px; font-weight: 700; font-size: .9rem; box-shadow: 0 4px 14px rgba(0,0,0,0.25); transform: translateY(80px); opacity: 0; transition: all 0.25s ease; pointer-events: none; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    /* KPIs */
+    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 24px; }
+    .kpi { display: flex; flex-direction: column; gap: 4px; }
+    .kpi .l { font-size: .8rem; color: var(--muted); font-weight: 600; }
+    .kpi .v { font-size: 1.45rem; font-weight: 800; }
+
+    .closing-box { border: 2px solid var(--accent); background: var(--surface); border-radius: 20px; padding: 20px; margin-bottom: 24px; }
+
+    /* Mobile Floating Cart Summary Button */
+    .float-cart-bar {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 68px);
+      left: 12px; right: 12px;
+      z-index: 44;
+      display: none;
+    }
+    .float-cart-btn {
+      width: 100%;
+      background: var(--accent);
+      color: var(--accent-ink);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 16px;
+      padding: 12px 18px;
+      font-weight: 700;
+      font-size: .98rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 8px 24px rgba(194,101,10,0.35);
+      cursor: pointer;
+      min-height: 52px;
+      transition: transform 0.15s;
+    }
+    .float-cart-btn:active { transform: scale(0.98); }
+    .float-cart-badge {
+      background: rgba(255,255,255,0.28);
+      color: #fff;
+      border-radius: 99px;
+      padding: 3px 10px;
+      font-size: .85rem;
+      font-weight: 800;
+    }
+
+    /* Mobile Cart Sliding Bottom-Sheet / Drawer */
+    .cart-drawer-scrim {
+      position: fixed; inset: 0; z-index: 110;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(2px);
+      display: flex; flex-direction: column; justify-content: flex-end;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+    }
+    .cart-drawer-scrim.open {
+      opacity: 1; pointer-events: auto;
+    }
+    .cart-drawer {
+      background: var(--surface);
+      border-top: 1px solid var(--line);
+      border-radius: 24px 24px 0 0;
+      max-height: 85vh;
+      display: flex; flex-direction: column;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.3);
+      padding: 16px;
+      padding-bottom: max(20px, calc(env(safe-area-inset-bottom, 0px) + 12px));
+      transform: translateY(100%);
+      transition: transform 0.25s ease-out;
+    }
+    .cart-drawer-scrim.open .cart-drawer {
+      transform: translateY(0);
+    }
+    .drawer-handle {
+      width: 48px; height: 5px;
+      background: var(--line);
+      border-radius: 99px;
+      margin: 0 auto 12px;
+      flex-shrink: 0;
+    }
+    .drawer-hdr {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px; padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+    }
+    .drawer-body {
+      overflow-y: auto; flex: 1;
+      display: flex; flex-direction: column;
+      max-height: calc(85vh - 120px);
+    }
+
+    @media (max-width: 900px) {
+      .shell { grid-template-columns: 1fr; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 84px); }
+      .nav {
+        position: fixed; top: auto; bottom: 0; inset-inline: 0;
+        flex-direction: row; justify-content: space-around;
+        background: var(--surface); border-top: 1px solid var(--line);
+        border-radius: 0; padding: 6px 8px;
+        padding-bottom: max(6px, env(safe-area-inset-bottom, 0px));
+        z-index: 45;
+      }
+      .nav-btn { flex: 1; padding: 8px 4px; font-size: .75rem; border-radius: 10px; min-height: 48px; }
+      .ocols { grid-template-columns: 1fr; }
+      .ocols .cart { display: none; }
+      .float-cart-bar { display: block; }
+      .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .tile { min-height: 105px; padding: 12px; }
+      .tabs { display: none; }
+    }
+    @media (min-width: 641px) and (max-width: 900px) {
+      .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    }
+    @media (min-width: 901px) {
+      .tabs { display: none; }
+      .float-cart-bar { display: none !important; }
+      .cart-drawer-scrim { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hdr gut">
+    <div class="hdr-in" id="hdr"></div>
+  </header>
+
+  <div class="shell gut">
+    <nav class="nav" id="nav" aria-label="التنقل الرئيسي"></nav>
+    <main class="main" id="main"></main>
+  </div>
+
+  <div id="modal"></div>
+  <div class="toast" id="toast"><span></span></div>
+
+  <script>
+  /* ---------- Core State & Clean Slate Initialization ---------- */
+  const STORAGE_KEY = 'bimbo-pos-v4';
+  const $ = s => document.querySelector(s);
+  const $$ = s => document.querySelectorAll(s);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  const num = v => parseFloat(String(v ?? 0).replace(/[^0-9.-]/g, '')) || 0;
+  const r2 = n => Math.round(n * 100) / 100;
+  const uid = () => 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
+
+  function cleanSeed() {
+    return {
+      v: 4,
+      items: [], // Zero dummy products
+      tables: [
+        { id: 'tb-1', name: 'طاولة 1', order: null },
+        { id: 'tb-2', name: 'طاولة 2', order: null },
+        { id: 'tb-3', name: 'طاولة 3', order: null },
+        { id: 'tb-4', name: 'طاولة 4', order: null },
+        { id: 'tb-5', name: 'طاولة 5', order: null },
+        { id: 'tb-6', name: 'بار 1', order: null },
+        { id: 'tb-7', name: 'بار 2', order: null }
+      ],
+      take: { lines: [] },
+      settings: {
+        businessName: 'كرفان بيمبو - BIMBO POS',
+        phone: '',
+        address: '',
+        receiptHeader: 'أهلاً بكم! نسعد بخدمتكم دائماً',
+        receiptFooter: 'شكراً لزيارتكم! نرجو أن تكونوا قد استمتعتم بتجربتكم',
+        currency: 'ج.م',
+        taxRate: 14,
+        taxEnabled: false,
+        serviceRate: 12,
+        serviceEnabled: false,
+        paymentMethods: [
+          { id: 'cash', name: 'نقدي (كاش)', active: true },
+          { id: 'card', name: 'بطاقة ائتمان / فيزا', active: true },
+          { id: 'wallet', name: 'محفظة إلكترونية (انستاباي / فودافون كاش)', active: true }
+        ]
+      },
+      sales: [], // Zero dummy sales
+      counter: 1001
+    };
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const d = JSON.parse(raw);
+        if (d && d.v === 4) {
+          d.items = (d.items || []).map(i => ({
+            id: i.id || uid(),
+            name: String(i.name || '').trim(),
+            cat: String(i.category || i.cat || 'عام').trim() || 'عام',
+            category: String(i.category || i.cat || 'عام').trim() || 'عام',
+            price: num(i.price),
+            available: i.available !== false
+          }));
+          d.take = d.take || { lines: [] };
+          return d;
+        }
+      }
+    } catch(e) {}
+    return cleanSeed();
+  }
+
+  let S = loadState();
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(S)); } catch(e) {}
+  }
+
+  /* Formatting Helpers */
+  const money = n => (r2(n || 0)).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' ' + (S.settings.currency || 'ج.م');
+  const fTime = ts => new Date(ts).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+  const fDay = ts => new Date(ts).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' });
+  const dayKey = ts => new Date(ts).toISOString().slice(0, 10);
+  const monKey = ts => new Date(ts).toISOString().slice(0, 7);
+
+  function getPayName(pid) {
+    const m = (S.settings.paymentMethods || []).find(x => x.id === pid);
+    if (m) return m.name;
+    if (pid === 'cash') return 'نقدي (كاش)';
+    if (pid === 'card') return 'بطاقة ائتمان';
+    if (pid === 'wallet') return 'محفظة إلكترونية';
+    return pid || 'نقدي';
+  }
+
+  function calc(lines, disc) {
+    const sub = r2((lines || []).reduce((a, l) => a + num(l.price) * l.qty, 0));
+    let discount = 0;
+    if (disc && disc.v > 0) {
+      discount = disc.t === 'pct' ? r2(sub * Math.min(disc.v, 100) / 100) : r2(Math.min(disc.v, sub));
+    }
+    const base = r2(sub - discount);
+    const svc = S.settings.serviceEnabled ? r2(base * (S.settings.serviceRate || 0) / 100) : 0;
+    const tax = S.settings.taxEnabled ? r2(base * (S.settings.taxRate || 0) / 100) : 0;
+    const total = r2(base + svc + tax);
+    return { sub, discount, net: base, svc, tax, total };
+  }
+
+  /* Navigation & UI State */
+  const ui = {
+    view: 'tables',
+    ctx: null,
+    cat: 'الكل',
+    mcat: 'الكل',
+    q: '',
+    editTables: false,
+    period: 'today',
+    msort: 'name',
+    otab: 'menu',
+    isMobileCartOpen: false,
+    closingType: 'day',
+    closingDayDate: new Date().toISOString().slice(0, 10),
+    closingMonthDate: new Date().toISOString().slice(0, 7)
+  };
+
+  let modalSubmit = null, modalOk = null, toastTimer = null;
+  const tableOf = () => S.tables.find(t => t.id === ui.ctx.id);
+  function getOrder() {
+    if (ui.ctx && ui.ctx.kind === 'table') {
+      const t = tableOf();
+      if (!t.order) t.order = { openedAt: Date.now(), lines: [] };
+      return t.order;
+    }
+    return S.take;
+  }
+
+  function toast(m) {
+    const t = $('#toast');
+    t.firstChild.textContent = m;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+  }
+
+  function modal(html, submit) {
+    modalSubmit = submit || null;
+    $('#modal').innerHTML = `<div class="scrim" data-act="scrim"><div class="dlg" role="dialog" aria-modal="true">${html}</div></div>`;
+    const f = $('#modal input:not([type=hidden]):not([type=radio]), #modal select');
+    if (f && !f.closest('[data-nofocus]')) try { f.focus(); } catch(e){}
+  }
+  function closeModal() { $('#modal').innerHTML = ''; modalSubmit = null; modalOk = null; }
+
+  // Rock-Solid In-App Confirmation Modal (Fixes broken window.confirm in iframe)
+  function ask(msg, label, fn) {
+    modalOk = fn;
+    modal(`
+      <h3 style="margin-bottom:12px;color:var(--bad)">⚠️ تأكيد الإجراء</h3>
+      <p style="margin-bottom:18px;line-height:1.6;font-size:.95rem">${msg}</p>
+      <div class="acts">
+        <button type="button" class="btn" data-act="mclose">إلغاء</button>
+        <button type="button" class="btn danger" data-act="mok" style="font-weight:700">${label}</button>
+      </div>`);
+  }
+
+  /* Theme Sync & Initialization */
+  function applyTheme(isDark) {
+    document.documentElement.classList.toggle('dark', isDark);
+    document.body.classList.toggle('dark', isDark);
+    document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
+    try { localStorage.setItem('bimbo-theme', isDark ? 'dark' : 'light'); } catch(e){}
+  }
+
+  function initTheme() {
+    const saved = localStorage.getItem('bimbo-theme');
+    const isDark = saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(isDark);
+  }
+  initTheme();
+
+  /* ---------- Header & Navigation ---------- */
+  const NAV = [
+    ['tables', 'الطاولات', '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>'],
+    ['take', 'تيك أواي', '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>'],
+    ['menu', 'المنيو', '<path d="M4 6h16M4 12h16M4 18h10"/>'],
+    ['reports', 'التقارير والإغلاق', '<path d="M3 3v18h18"/><path d="M8 17v-6M13 17V7M18 17v-9"/>'],
+    ['settings', 'الإعدادات', '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>']
+  ];
+
+  function renderShell() {
+    const st = S.settings;
+    const isDark = document.documentElement.classList.contains('dark');
+    $('#hdr').innerHTML = `
+      <div class="brand">
+        <span class="logo-badge">BIMBO</span>
+        <div class="brand-meta">
+          <div class="brand-name">${esc(st.businessName)}</div>
+          <div class="brand-loc">
+            ${st.phone ? `<span>${esc(st.phone)}</span>` : ''}
+            ${st.address ? `<span>· ${esc(st.address)}</span>` : ''}
+            ${!st.phone && !st.address ? '<span>نظام كاشير الكرفان والمطاعم</span>' : ''}
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <button type="button" class="btn" data-act="theme" style="padding:6px 12px;font-size:.85rem;font-weight:700" title="تبديل الوضع">
+          ${isDark ? '☀️ وضع نهاري' : '🌙 وضع ليلي'}
+        </button>
+      </div>`;
+
+    $('#nav').innerHTML = NAV.map(([k, l, icon]) => `
+      <button type="button" class="nav-btn" data-act="nav" data-v="${k}" ${ui.view === k ? 'aria-current="page"' : ''}>
+        <svg viewBox="0 0 24 24" aria-hidden="true">${icon}</svg>
+        <span>${l}</span>
+      </button>
+    `).join('');
+  }
+
+  function render() {
+    renderShell();
+    const m = $('#main');
+    if (ui.ctx && (ui.view === 'tables' || ui.view === 'take')) {
+      m.innerHTML = pageOrder();
+    } else {
+      m.innerHTML = {
+        tables: pageTables,
+        take: pageTables,
+        menu: pageMenu,
+        reports: pageReports,
+        settings: pageSettings
+      }[ui.view]();
+    }
+  }
+
+  /* ---------- 1. Tables View ---------- */
+  function pageTables() {
+    const open = S.tables.filter(t => t.order && t.order.lines.length).length;
+    return `
+      <div class="phead">
+        <div>
+          <h1>الطاولات وجلسات الكرفان</h1>
+          <p class="sub">${open} طاولة مفتوحة حالياً من إجمالي ${S.tables.length}</p>
+        </div>
+        <div class="row">
+          ${ui.editTables ? '<button type="button" class="btn" data-act="add-table">+ طاولة جديدة</button>' : ''}
+          <button type="button" class="btn ${ui.editTables ? 'pri' : ''}" data-act="toggle-edit-tables">${ui.editTables ? 'حفظ الترتيب' : 'ترتيب وتعديل الطاولات'}</button>
+        </div>
+      </div>
+      ${ui.editTables ? '<div class="card" style="margin-bottom:14px;background:var(--accent-soft);color:var(--ink)"><p class="sub" style="color:inherit">يمكنك استخدام الأسهم لتغيير الترتيب أو تعديل الاسم أو حذف الطاولات الفارغة.</p></div>' : ''}
+      <div class="tgrid">${S.tables.map(tcard).join('')}</div>`;
+  }
+
+  function tcard(t) {
+    const L = t.order ? t.order.lines : [], c = calc(L, null), busy = L.length > 0;
+    if (ui.editTables) {
+      return `
+        <div class="tcard edit" data-id="${t.id}">
+          <b>${esc(t.name)}</b>
+          <span class="pill ${busy ? 'warn' : 'mut'}">${busy ? 'مشغولة' : 'فاضية'}</span>
+          <div class="row" style="margin-top:auto">
+            <button type="button" class="ibtn" data-act="mv-table" data-id="${t.id}" data-d="-1" title="للأمام">→</button>
+            <button type="button" class="ibtn" data-act="mv-table" data-id="${t.id}" data-d="1" title="للخلف">←</button>
+            <button type="button" class="ibtn" data-act="ren-table" data-id="${t.id}" title="تغيير الاسم">✎</button>
+            <button type="button" class="ibtn danger" data-act="del-table" data-id="${t.id}" ${busy ? 'disabled' : ''} title="حذف">×</button>
+          </div>
+        </div>`;
+    }
+    return `
+      <button type="button" class="tcard ${busy ? 'busy' : ''}" data-act="open-table" data-id="${t.id}">
+        <b>${esc(t.name)}</b>
+        ${busy
+          ? `<span class="sub">${L.reduce((a, l) => a + l.qty, 0)} صنف</span>
+             <span class="tot">${money(c.sub)}</span>`
+          : '<span class="pill mut" style="align-self:flex-start">متاحة / فاضية</span>'
+        }
+      </button>`;
+  }
+
+  /* ---------- 2. Order Screen & Cart (With Single-Item Delete) ---------- */
+  function gridHTML() {
+    const q = ui.q.trim().toLowerCase();
+    const list = S.items.filter(i => (ui.cat === 'الكل' || i.cat === ui.cat) && (!q || i.name.toLowerCase().includes(q)));
+    if (!list.length) {
+      if (!S.items.length) {
+        return '<div class="empty" style="grid-column:1/-1"><p style="font-weight:700;font-size:1.05rem;margin-bottom:6px">لا توجد أصناف حالياً في المنيو</p><p class="sub">يرجى الذهاب لتبويب «المنيو» لإضافة أصناف أو استيراد ملف إكسيل</p></div>';
+      }
+      return '<div class="empty" style="grid-column:1/-1">لا توجد أصناف مطابقة للبحث</div>';
+    }
+    return list.map(i => {
+      const isAvail = i.available !== false;
+      return `
+        <button type="button" class="tile ${isAvail ? '' : 'unavail'}" data-act="${isAvail ? 'add-item-cart' : 'item-disabled'}" data-id="${i.id}">
+          <span style="font-weight:700;font-size:1.02rem">${esc(i.name)}</span>
+          <div>
+            <div class="p">${money(i.price)}</div>
+            ${!isAvail ? '<span class="unavail-badge">غير متوفر حالياً</span>' : ''}
+          </div>
+        </button>`;
+    }).join('');
+  }
+
+  function ctabHTML() {
+    const o = getOrder(), L = o.lines || [];
+    return `الطلب (${L.reduce((a, l) => a + l.qty, 0)}) · ${money(calc(L, null).sub)}`;
+  }
+
+  function cartHTML() {
+    const o = getOrder(), L = o.lines || [], c = calc(L, null);
+    const st = S.settings;
+    const body = L.length
+      ? `<div class="cart-lines">${L.map(l => `
+          <div class="line">
+            <div class="line-top">
+              <div>
+                <div class="nm">${esc(l.name)}</div>
+                <div class="sub">${money(l.price)} للقطعة</div>
+              </div>
+              <div class="row">
+                <div class="stp">
+                  <button type="button" class="ibtn" data-act="dec-cart" data-id="${l.id}" aria-label="نقص">−</button>
+                  <b>${l.qty}</b>
+                  <button type="button" class="ibtn" data-act="inc-cart" data-id="${l.id}" aria-label="زيادة">+</button>
+                </div>
+                <!-- Working Single Item Delete Button -->
+                <button type="button" class="ibtn danger" data-act="del-cart-line" data-id="${l.id}" title="حذف الصنف من الفاتورة">🗑️</button>
+              </div>
+            </div>
+            <input data-act="line-note" data-id="${l.id}" value="${esc(l.note)}" placeholder="ملاحظة (بدون سكر، صوص إضافي...)" aria-label="ملاحظة">
+          </div>`).join('')}</div>`
+      : '<div class="empty">اضغط على الأصناف من القائمة لإضافتها للطلب</div>';
+
+    const svcH = st.serviceEnabled ? `<div class="sum"><span>خدمة (${st.serviceRate}%)</span><span>${money(c.svc)}</span></div>` : '';
+    const taxH = st.taxEnabled ? `<div class="sum"><span>ضريبة (${st.taxRate}%)</span><span>${money(c.tax)}</span></div>` : '';
+
+    return `
+      <h3 style="margin-bottom:10px">تفاصيل الطلب</h3>
+      ${body}
+      <div style="margin-top:auto;padding-top:12px">
+        <div class="sum"><span>الإجمالي الفرعي</span><span>${money(c.sub)}</span></div>
+        ${svcH}
+        ${taxH}
+        <div class="sum big"><span>المطلوب النهائي</span><span>${money(c.total)}</span></div>
+      </div>
+      <div class="row" style="margin-top:14px;flex-wrap:nowrap">
+        <button type="button" class="btn lg pri" style="flex:1" data-act="checkout" ${L.length ? '' : 'disabled'}>دفع وإنهاء الفاتورة</button>
+        ${L.length ? '<button type="button" class="btn danger" style="min-height:52px" data-act="clear-order" title="مسح الفاتورة بالكامل">إفراغ</button>' : ''}
+      </div>`;
+  }
+
+  function mobileCartHTML() {
+    const o = getOrder(), L = o.lines || [], c = calc(L, null);
+    const count = L.reduce((a, l) => a + l.qty, 0);
+
+    const floatBtn = (count > 0 && !ui.isMobileCartOpen) ? `
+      <div class="float-cart-bar">
+        <button type="button" class="float-cart-btn" data-act="open-mobile-cart" aria-label="عرض الطلب">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="float-cart-badge">${count}</span>
+            <span>عرض الطلب والفاتورة</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <b>${money(c.total)}</b>
+            <span style="font-size:1.1rem">←</span>
+          </div>
+        </button>
+      </div>` : '';
+
+    const drawer = `
+      <div class="cart-drawer-scrim ${ui.isMobileCartOpen ? 'open' : ''}" data-act="close-mobile-cart">
+        <div class="cart-drawer" onclick="event.stopPropagation()">
+          <div class="drawer-handle"></div>
+          <div class="drawer-hdr">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:1.2rem">🛍️</span>
+              <h3 style="margin:0">محتويات الفاتورة (${count})</h3>
+            </div>
+            <button type="button" class="ibtn" data-act="close-mobile-cart" aria-label="إغلاق السلة">✕</button>
+          </div>
+          <div class="drawer-body">
+            ${cartHTML()}
+          </div>
+        </div>
+      </div>`;
+
+    return floatBtn + drawer;
+  }
+
+  function pageOrder() {
+    const cats = ['الكل', ...new Set(S.items.map(i => i.category || i.cat || 'عام'))];
+    const title = ui.ctx.kind === 'table' ? esc(tableOf().name) : 'طلب تيك أواي / دليفري';
+    const o = getOrder();
+    return `
+      <div class="phead">
+        <div class="row">
+          ${ui.ctx.kind === 'table' ? '<button type="button" class="btn" data-act="back-tables">→ الطاولات</button>' : ''}
+          <div>
+            <h1>${title}</h1>
+            <p class="sub">${ui.ctx.kind === 'table' ? `فُتحت ${fTime(o.openedAt)}` : 'كاشير سريع فوري بدون طاولة'}</p>
+          </div>
+        </div>
+      </div>
+      <div class="ocols" data-tab="${ui.otab}">
+        <section class="menuc">
+          <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:14px">
+            <input id="q" type="search" placeholder="ابحث عن صنف بالاسم..." value="${esc(ui.q)}" aria-label="بحث في المنيو">
+            ${cats.length > 1 ? `
+              <div class="scroll-wrap">
+                <button type="button" class="scroll-btn" data-act="scroll-bar" data-d="1" title="تمرير لليمين" aria-label="تمرير لليمين">›</button>
+                <div class="scroll-cnt cats">
+                  ${cats.map(c => `<button type="button" class="chip" data-act="filter-cat" data-c="${esc(c)}" aria-pressed="${ui.cat === c}">${esc(c)}</button>`).join('')}
+                </div>
+                <button type="button" class="scroll-btn" data-act="scroll-bar" data-d="-1" title="تمرير لليسار" aria-label="تمرير لليسار">‹</button>
+              </div>` : ''}
+          </div>
+          <div class="grid" id="grid">${gridHTML()}</div>
+        </section>
+        <aside class="cart card" id="cartwrap">${cartHTML()}</aside>
+      </div>
+      <div id="mobcartwrap">${mobileCartHTML()}</div>`;
+  }
+
+  function refreshOrder() {
+    const c = $('#cartwrap'); if (c) c.innerHTML = cartHTML();
+    const t = $('#ctab'); if (t) t.innerHTML = ctabHTML();
+    const m = $('#mobcartwrap'); if (m) m.innerHTML = mobileCartHTML();
+  }
+
+  /* ---------- 3. Checkout & Invoice Finishing ---------- */
+  function openCheckout() {
+    const o = getOrder(), L = o.lines || []; if (!L.length) return;
+    ui.isMobileCartOpen = false;
+    refreshOrder();
+    const methods = (S.settings.paymentMethods || []).filter(m => m.active);
+    const paysHTML = methods.map((m, i) => `
+      <label style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;cursor:pointer">
+        <input type="radio" name="pay" value="${m.id}" ${i === 0 ? 'checked' : ''}>
+        <span style="font-weight:700">${esc(m.name)}</span>
+      </label>
+    `).join('');
+
+    modal(`
+      <form id="mf" data-live="co">
+        <h2 style="margin-bottom:10px">إنهاء الطلب والدفع</h2>
+        <div id="cosum" class="card" style="background:var(--surface2)"></div>
+        <div class="fg" style="margin:14px 0">
+          <label class="f">نوع الخصم
+            <select name="dt">
+              <option value="amt">مبلغ خصم مباشر (${esc(S.settings.currency)})</option>
+              <option value="pct">نسبة مئوية (%)</option>
+            </select>
+          </label>
+          <label class="f">قيمة الخصم
+            <input name="dv" type="number" min="0" step="any" inputmode="decimal" value="0">
+          </label>
+        </div>
+        <h4 style="margin-bottom:8px">طريقة الدفع</h4>
+        <div style="display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:14px">${paysHTML}</div>
+        <label class="f" id="recw" style="margin-bottom:14px">المبلغ المستلم نقداً (لحساب الباقي)
+          <input name="rv" type="number" min="0" step="any" inputmode="decimal" placeholder="المبلغ المدفوع من العميل">
+        </label>
+        <div class="acts">
+          <button type="button" class="btn" data-act="mclose">إلغاء</button>
+          <button class="btn pri lg" type="submit" style="padding-inline:28px">تأكيد الدفع وطباعة الفاتورة</button>
+        </div>
+      </form>`, fd => {
+        finishSale({ t: fd.get('dt'), v: num(fd.get('dv')) }, fd.get('pay') || 'cash', num(fd.get('rv')));
+      });
+    coRefresh();
+  }
+
+  function coRefresh() {
+    const f = $('#mf'); if (!f) return;
+    const fd = new FormData(f);
+    const c = calc(getOrder().lines || [], { t: fd.get('dt'), v: num(fd.get('dv')) });
+    const cash = fd.get('pay') === 'cash';
+    const rv = num(fd.get('rv'));
+    const recw = $('#recw'); if (recw) recw.hidden = !cash;
+    const cosum = $('#cosum');
+    if (cosum) {
+      cosum.innerHTML = `
+        <div class="sum"><span>الإجمالي الفرعي</span><span>${money(c.sub)}</span></div>
+        ${c.discount ? `<div class="sum"><span>الخصم</span><span>− ${money(c.discount)}</span></div>` : ''}
+        ${c.svc ? `<div class="sum"><span>رسوم الخدمة</span><span>${money(c.svc)}</span></div>` : ''}
+        ${c.tax ? `<div class="sum"><span>الضريبة</span><span>${money(c.tax)}</span></div>` : ''}
+        <div class="sum big" style="color:var(--accent)"><span>المبلغ المطلوب</span><span>${money(c.total)}</span></div>
+        ${cash && rv > 0 ? `
+          <div class="sum" style="padding-top:6px;border-top:1px dashed var(--line);margin-top:6px">
+            <span>الباقي للعميل</span>
+            <b style="color:${rv >= c.total ? 'var(--good)' : 'var(--bad)'}">${rv >= c.total ? money(rv - c.total) : 'متبقي ' + money(c.total - rv)}</b>
+          </div>` : ''}`;
+    }
+  }
+
+  function finishSale(disc, pay, recv) {
+    const o = getOrder(), L = [...o.lines]; if (!L.length) return;
+    const c = calc(L, disc);
+    const no = S.counter++;
+    const s = {
+      id: uid(),
+      no,
+      ts: Date.now(),
+      type: ui.ctx.kind,
+      table: ui.ctx.kind === 'table' ? tableOf().name : '',
+      lines: L,
+      sub: c.sub,
+      disc: c.discount,
+      svc: c.svc,
+      tax: c.tax,
+      total: c.total,
+      net: c.net,
+      pay,
+      recv: recv || undefined
+    };
+    S.sales.push(s);
+
+    if (ui.ctx.kind === 'table') tableOf().order = null;
+    else S.take.lines = [];
+
+    save(); closeModal();
+    window._lastReceipt = printReceiptText(s);
+    modal(`
+      <h2 style="margin-bottom:8px;color:var(--good)">✓ تم دفع الفاتورة رقم #${s.no}</h2>
+      <p class="sub" style="margin-bottom:14px">تم تسجيل المعاملة وحفظها في التقارير المحاسبية</p>
+      <div class="receipt" style="max-height:260px;overflow-y:auto;margin-bottom:16px">${esc(window._lastReceipt)}</div>
+      <div class="acts">
+        <button type="button" class="btn" data-act="copy-receipt">نسخ الفاتورة</button>
+        <button type="button" class="btn pri" data-act="print-receipt">طباعة الإيصال</button>
+      </div>`);
+    render();
+    toast(`تم دفع الفاتورة #${s.no} بنجاح`);
+  }
+
+  function printReceiptText(s) {
+    const st = S.settings;
+    const linePad = (a, b) => a + ' '.repeat(Math.max(1, 32 - a.length - b.length)) + b;
+    const divider = '--------------------------------';
+    const out = [
+      st.businessName,
+      st.phone ? 'هاتف: ' + st.phone : '',
+      st.address ? st.address : '',
+      divider,
+      st.receiptHeader ? st.receiptHeader : '',
+      divider,
+      'فاتورة رقم: #' + s.no,
+      'التاريخ: ' + fDay(s.ts) + ' ' + fTime(s.ts),
+      'نوع الطلب: ' + (s.type === 'table' ? s.table : 'تيك أواي'),
+      divider,
+      ...s.lines.map(l => linePad(l.qty + 'x ' + l.name, money(l.price * l.qty))),
+      divider,
+      linePad('الإجمالي الفرعي:', money(s.sub)),
+      ...(s.disc ? [linePad('الخصم:', '− ' + money(s.disc))] : []),
+      ...(s.svc ? [linePad('الخدمة (' + st.serviceRate + '%):', money(s.svc))] : []),
+      ...(s.tax ? [linePad('الضريبة (' + st.taxRate + '%):', money(s.tax))] : []),
+      divider,
+      linePad('المطلوب النهائي:', money(s.total)),
+      linePad('طريقة الدفع:', getPayName(s.pay)),
+      divider,
+      st.receiptFooter ? st.receiptFooter : 'شكراً لزيارتكم!'
+    ];
+    return out.filter(Boolean).join('\n');
+  }
+
+  /* ---------- 4. Menu Management & Smart Excel Import (Guaranteed 89 Items) ---------- */
+  function pageMenu() {
+    ui.mcat = ui.mcat || 'الكل';
+    let list = S.items.filter(i => {
+      const cat = i.category || i.cat || 'عام';
+      return ui.mcat === 'الكل' || cat === ui.mcat;
+    });
+
+    if (ui.msort === 'name') list.sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'ar'));
+    else if (ui.msort === 'price-asc') list.sort((a, b) => num(a.price) - num(b.price));
+    else if (ui.msort === 'price-desc') list.sort((a, b) => num(b.price) - num(a.price));
+    else if (ui.msort === 'cat') list.sort((a, b) => String(a.category || a.cat || 'عام').localeCompare(String(b.category || b.cat || 'عام'), 'ar'));
+
+    const cats = ['الكل', ...new Set(S.items.map(i => i.category || i.cat || 'عام'))];
+
+    return `
+      <div class="phead">
+        <div>
+          <h1>قائمة المنيو والأسعار</h1>
+          <p class="sub">${S.items.length} صنف مسجل في ${cats.length - 1} فئات · نظام بدون تعقيد المخزون يركز على الاسم والفئة والسعر والإتاحة</p>
+        </div>
+        <div class="row">
+          <button type="button" class="btn pri" data-act="new-item">+ صنف جديد</button>
+          <button type="button" class="btn" data-act="export-menu-excel">تصدير إكسيل (.xlsx)</button>
+          <label class="btn" style="cursor:pointer">
+            استيراد إكسيل
+            <input type="file" id="menu-file" accept=".xlsx,.xls,.csv" hidden data-act="import-menu-excel">
+          </label>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div class="row" style="flex:1">
+          <select data-act="msort" style="width:auto">
+            <option value="name" ${ui.msort === 'name' ? 'selected' : ''}>ترتيب: الاسم أ-ي</option>
+            <option value="cat" ${ui.msort === 'cat' ? 'selected' : ''}>ترتيب: الفئة / القسم</option>
+            <option value="price-asc" ${ui.msort === 'price-asc' ? 'selected' : ''}>السعر: من الأقل للأعلى</option>
+            <option value="price-desc" ${ui.msort === 'price-desc' ? 'selected' : ''}>السعر: من الأعلى للأقل</option>
+          </select>
+          <span class="sub">${S.items.filter(i => i.available !== false).length} متاح · ${S.items.filter(i => i.available === false).length} غير متاح</span>
+        </div>
+      </div>
+
+      ${cats.length > 1 ? `
+        <div class="card" style="margin-bottom:16px;padding:10px 14px">
+          <div class="scroll-wrap">
+            <button type="button" class="scroll-btn" data-act="scroll-bar" data-d="1" title="تمرير لليمين" aria-label="تمرير لليمين">›</button>
+            <div class="scroll-cnt">
+              ${cats.map(c => `<button type="button" class="chip" data-act="filter-mcat" data-c="${esc(c)}" aria-pressed="${ui.mcat === c}">${esc(c)}</button>`).join('')}
+            </div>
+            <button type="button" class="scroll-btn" data-act="scroll-bar" data-d="-1" title="تمرير لليسار" aria-label="تمرير لليسار">‹</button>
+          </div>
+        </div>` : ''}
+
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>الصنف</th>
+              <th>الفئة</th>
+              <th class="n">السعر</th>
+              <th>حالة الإتاحة</th>
+              <th class="n">إجراءات</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${list.map(i => {
+              const isAvail = i.available !== false;
+              return `
+                <tr>
+                  <td><b>${esc(i.name)}</b></td>
+                  <td><span class="chip" style="padding:3px 10px;font-size:.78rem">${esc(i.category || i.cat || 'عام')}</span></td>
+                  <td class="n" style="font-weight:700;color:var(--accent)">${money(num(i.price))}</td>
+                  <td>
+                    <button type="button" class="pill ${isAvail ? 'good' : 'bad'}" data-act="toggle-item-avail" data-id="${i.id}" style="cursor:pointer">
+                      ${isAvail ? '● متاح للطلب' : '○ غير متاح'}
+                    </button>
+                  </td>
+                  <td class="n">
+                    <button type="button" class="ibtn" data-act="edit-item" data-id="${i.id}" title="تعديل">✎</button>
+                    <!-- Working Menu Item Delete Button -->
+                    <button type="button" class="ibtn danger" data-act="del-item" data-id="${i.id}" title="حذف الصنف من المنيو">🗑️</button>
+                  </td>
+                </tr>`;
+            }).join('') || '<tr><td colspan="5" class="empty"><p style="font-weight:700;font-size:1.05rem;margin-bottom:6px">لا توجد أصناف حالياً، يرجى إضافة أصناف أو استيراد ملف إكسل</p><p class="sub">اضغط على زر "+ صنف جديد" أعلاه أو ارفع ملف Excel بضغطة زر</p></td></tr>'}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  function itemModal(id) {
+    const it = id ? S.items.find(x => x.id === id) : { name: '', cat: 'عام', price: '', available: true };
+    const cats = [...new Set(S.items.map(i => i.category || i.cat || 'عام'))];
+    modal(`
+      <form id="mf">
+        <h2>${id ? 'تعديل الصنف' : 'إضافة صنف جديد'}</h2>
+        <p class="sub">إدارة الأصناف المبسطة (الاسم، الفئة، السعر، والإتاحة)</p>
+        <div class="fg" style="margin:16px 0">
+          <label class="f">اسم الصنف
+            <input name="name" required value="${esc(it.name)}" placeholder="مثال: برجر دبل تشيز">
+          </label>
+          <label class="f">الفئة / التصنيف
+            <input name="cat" required list="catl" value="${esc(it.category || it.cat || '')}" placeholder="مثال: ساندوتشات">
+            <datalist id="catl">${cats.map(c => `<option value="${esc(c)}">`).join('')}</datalist>
+          </label>
+          <label class="f">سعر البيع (${esc(S.settings.currency)})
+            <input name="price" type="number" min="0" step="any" inputmode="decimal" required value="${it.price ?? ''}" placeholder="مثال: 55">
+          </label>
+          <label class="f">الحالة
+            <select name="available">
+              <option value="true" ${it.available !== false ? 'selected' : ''}>متاح للبيع الفوري</option>
+              <option value="false" ${it.available === false ? 'selected' : ''}>غير متوفر حالياً</option>
+            </select>
+          </label>
+        </div>
+        <div class="acts">
+          <button type="button" class="btn" data-act="mclose">إلغاء</button>
+          <button class="btn pri" type="submit">حفظ الصنف</button>
+        </div>
+      </form>`, fd => {
+        const o = {
+          name: fd.get('name').trim(),
+          cat: fd.get('cat').trim() || 'عام',
+          category: fd.get('cat').trim() || 'عام',
+          price: num(fd.get('price')),
+          available: fd.get('available') === 'true'
+        };
+        if (id) Object.assign(it, o);
+        else S.items.push({ id: uid(), ...o });
+        save(); closeModal(); render(); toast('تم حفظ الصنف بنجاح');
+      });
+  }
+
+  function exportMenuExcel() {
+    if (!S.items.length) { toast('لا توجد أصناف في المنيو لتصديرها'); return; }
+    if (typeof XLSX === 'undefined') { toast('مكتبة SheetJS قيد التحميل...'); return; }
+    const rows = [
+      ['اسم الصنف', 'الفئة', 'سعر البيع', 'حالة التوفر'],
+      ...S.items.map(i => [i.name, i.category || i.cat || 'عام', num(i.price), i.available !== false ? 'متاح' : 'غير متوفر'])
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Menu');
+    const d = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `BIMBO_Menu_${d}.xlsx`);
+    toast('تم تصدير المنيو إلى ملف Excel بنجاح');
+  }
+
+  // Intelligent Excel Parser for 89 items across sheets and diverse headers
+  function handleMenuImport(file) {
+    if (typeof XLSX === 'undefined') { toast('مكتبة SheetJS قيد التحميل...'); return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, { type: 'array' });
+        const importedItems = [];
+
+        const nameHeaders = ['الاسم', 'اسم الصنف', 'الصنف', 'اسم المنتج', 'المنتج', 'name', 'item', 'product', 'title', 'dish'];
+        const priceHeaders = ['السعر', 'سعر البيع', 'price', 'cost', 'ثمن', 'قيمة', 'مبلغ', 'rate', 'amount'];
+        const catHeaders = ['الفئة', 'القسم', 'التصنيف', 'category', 'cat', 'مجموعة', 'نوع', 'group', 'section'];
+
+        for (let sIdx = 0; sIdx < wb.SheetNames.length; sIdx++) {
+          const sName = wb.SheetNames[sIdx];
+          const ws = wb.Sheets[sName];
+          if (!ws || !ws['!ref']) continue;
+          const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: '' });
+          if (!rows || !rows.length) continue;
+
+          let headerRowIdx = -1, nameCol = -1, catCol = -1, priceCol = -1;
+
+          for (let r = 0; r < Math.min(15, rows.length); r++) {
+            const row = rows[r];
+            if (!Array.isArray(row)) continue;
+            const lower = row.map(c => String(c || '').trim().toLowerCase());
+            const nIdx = lower.findIndex(c => nameHeaders.some(h => c === h || c.includes(h)));
+            const pIdx = lower.findIndex(c => priceHeaders.some(h => c === h || c.includes(h)));
+            const cIdx = lower.findIndex(c => catHeaders.some(h => c === h || c.includes(h)));
+
+            if (nIdx > -1 && pIdx > -1) {
+              headerRowIdx = r; nameCol = nIdx; priceCol = pIdx; catCol = cIdx;
+              break;
+            }
+          }
+
+          const startRow = headerRowIdx > -1 ? headerRowIdx + 1 : 0;
+          if (nameCol === -1 || priceCol === -1) {
+            let bestPrice = -1, tCols = [];
+            for (let c = 0; c < 10; c++) {
+              let nc = 0, tc = 0;
+              for (let r = startRow; r < Math.min(startRow + 25, rows.length); r++) {
+                const val = rows[r]?.[c];
+                if (val === undefined || val === '') continue;
+                const clean = String(val).replace(/[^0-9.]/g, '');
+                if (clean && !isNaN(Number(clean)) && Number(clean) > 0) nc++;
+                else if (String(val).trim().length > 1) tc++;
+              }
+              if (nc >= 2 && bestPrice === -1) bestPrice = c;
+              if (tc >= 2 && c !== bestPrice) tCols.push(c);
+            }
+            if (priceCol === -1 && bestPrice > -1) priceCol = bestPrice;
+            if (nameCol === -1 && tCols.length > 0) {
+              nameCol = tCols[0];
+              if (catCol === -1 && tCols.length > 1) catCol = tCols[1];
+            }
+          }
+
+          if (nameCol === -1) nameCol = 0;
+          if (priceCol === -1) priceCol = 1;
+
+          for (let r = startRow; r < rows.length; r++) {
+            const row = rows[r];
+            if (!row || !Array.isArray(row) || !row.length) continue;
+            const rawName = String(row[nameCol] ?? '').trim();
+            if (!rawName || rawName === '0' || rawName === '#' || nameHeaders.includes(rawName.toLowerCase())) continue;
+
+            let cat = catCol > -1 && row[catCol] !== undefined ? String(row[catCol]).trim() : '';
+            if (!cat) cat = sName && !sName.toLowerCase().startsWith('sheet') ? sName : 'عام';
+
+            const price = num(row[priceCol]);
+            importedItems.push({
+              id: uid(),
+              name: rawName,
+              cat,
+              category: cat,
+              price: Math.max(0, price),
+              available: true
+            });
+          }
+        }
+
+        if (!importedItems.length) {
+          toast('لم يتم العثور على أصناف صالحة في الملف، تأكد من وجود أعمدة الاسم والسعر');
+          return;
+        }
+
+        // Add all 89 items without dropping any
+        S.items.push(...importedItems);
+        ui.cat = 'الكل';
+        ui.mcat = 'الكل';
+        save(); render();
+        toast(`تم استيراد ${importedItems.length} صنف بنجاح من ملف Excel!`);
+      } catch(err) {
+        toast('حدث خطأ أثناء قراءة ملف Excel: يرجى التحقق من صياغة الملف');
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  /* ---------- 5. Reports & Financial Period Closings (New Feature) ---------- */
+  const PERIODS = [['today', 'اليوم'], ['week', 'آخر 7 أيام'], ['month', 'الشهر الحالي'], ['all', 'كل الفترات والسجلات']];
+
+  function inPeriod(ts) {
+    const now = new Date(), p = ui.period;
+    if (p === 'all') return true;
+    if (p === 'today') return dayKey(ts) === dayKey(now);
+    if (p === 'month') return monKey(ts) === monKey(now);
+    return ts >= new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6).getTime();
+  }
+
+  function inClosingPeriod(ts) {
+    const d = new Date(ts);
+    if (ui.closingType === 'day') return dayKey(ts) === ui.closingDayDate;
+    if (ui.closingType === 'month') return monKey(ts) === ui.closingMonthDate;
+    if (ui.closingType === 'week') {
+      const end = new Date(ui.closingDayDate + 'T23:59:59').getTime();
+      const start = end - 7 * 86400 * 1000;
+      return ts >= start && ts <= end;
+    }
+    return false;
+  }
+
+  function summarizeSales(sales) {
+    const net = r2(sales.reduce((a, s) => a + (s.net || s.total || 0), 0));
+    const gross = r2(sales.reduce((a, s) => a + (s.total || 0), 0));
+    const count = sales.length;
+    const cash = r2(sales.filter(s => s.pay === 'cash').reduce((a, s) => a + (s.total || 0), 0));
+    const card = r2(sales.filter(s => s.pay === 'card').reduce((a, s) => a + (s.total || 0), 0));
+    const wallet = r2(sales.filter(s => s.pay === 'wallet').reduce((a, s) => a + (s.total || 0), 0));
+    const m = {};
+    sales.forEach(s => {
+      (s.lines || []).forEach(l => {
+        const name = l.name || 'غير معروف';
+        const x = m[name] || (m[name] = { name, qty: 0, rev: 0 });
+        x.qty += l.qty || 1;
+        x.rev += (l.price || 0) * (l.qty || 1);
+      });
+    });
+    return {
+      count,
+      net,
+      gross,
+      cash,
+      card,
+      wallet,
+      avg: count ? r2(net / count) : 0,
+      top: Object.values(m).sort((a, b) => b.qty - a.qty)
+    };
+  }
+
+  function pageReports() {
+    const P = S.sales.filter(s => inPeriod(s.ts));
+    const T = summarizeSales(P);
+
+    // Closing period calculations
+    const CP = S.sales.filter(s => inClosingPeriod(s.ts));
+    const CT = summarizeSales(CP);
+
+    return `
+      <div class="phead">
+        <div>
+          <h1>التقارير وتسوية الحسابات المالية</h1>
+          <p class="sub">متابعة إيرادات الكرفان، إغلاق الفترات، وتصدير التقارير المعتمدة</p>
+        </div>
+        <div class="row">
+          <button type="button" class="btn good" data-act="export-sales-excel">تصدير كل المبيعات (.xlsx)</button>
+          <label class="btn pri" style="cursor:pointer">
+            استيراد سجلات سابقة
+            <input type="file" id="sales-file" accept=".xlsx,.xls,.csv" hidden data-act="import-sales-excel">
+          </label>
+        </div>
+      </div>
+
+      <!-- Financial Closings Section -->
+      <div class="closing-box">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px;border-bottom:1px solid var(--line);padding-bottom:12px">
+          <div>
+            <h2 style="color:var(--accent);display:flex;align-items:center;gap:8px">🔒 إغلاق الحسابات وتسوية الفترات (Financial Closings)</h2>
+            <p class="sub">تحديد فترة معينة لاستخراج تقرير الإغلاق وتصفية الحركات القديمة بعد تصديرها</p>
+          </div>
+          <div class="row">
+            <button type="button" class="chip" data-act="set-ctype" data-t="day" aria-pressed="${ui.closingType === 'day'}">يومي (Day)</button>
+            <button type="button" class="chip" data-act="set-ctype" data-t="week" aria-pressed="${ui.closingType === 'week'}">أسبوعي (Week)</button>
+            <button type="button" class="chip" data-act="set-ctype" data-t="month" aria-pressed="${ui.closingType === 'month'}">شهري (Month)</button>
+          </div>
+        </div>
+
+        <div class="card" style="background:var(--surface2);margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <span style="font-weight:700;font-size:.9rem">اختر تاريخ الفترة:</span>
+          ${ui.closingType === 'month'
+            ? `<input type="month" value="${ui.closingMonthDate}" data-act="closing-m-date" style="width:auto;min-width:180px">`
+            : `<input type="date" value="${ui.closingDayDate}" data-act="closing-d-date" style="width:auto;min-width:180px">`
+          }
+          <span class="sub" style="margin-right:auto">تم العثور على <b>${CP.length}</b> فاتورة في هذه الفترة</span>
+        </div>
+
+        <div class="kpis">
+          <div class="card kpi">
+            <div class="l">المبيعات الصافية</div>
+            <div class="v" style="color:var(--accent)">${money(CT.net)}</div>
+          </div>
+          <div class="card kpi">
+            <div class="l">المحصل نقداً (كاش)</div>
+            <div class="v" style="color:var(--good)">${money(CT.cash)}</div>
+          </div>
+          <div class="card kpi">
+            <div class="l">بطاقات / فيزا</div>
+            <div class="v" style="color:#2563eb">${money(CT.card)}</div>
+          </div>
+          <div class="card kpi">
+            <div class="l">محافظ إلكترونية</div>
+            <div class="v" style="color:#7c3aed">${money(CT.wallet)}</div>
+          </div>
+          <div class="card kpi">
+            <div class="l">عدد الفواتير</div>
+            <div class="v">${CT.count}</div>
+          </div>
+          <div class="card kpi">
+            <div class="l">الإجمالي النهائي</div>
+            <div class="v">${money(CT.gross)}</div>
+          </div>
+        </div>
+
+        <div class="row" style="justify-content:space-between">
+          <button type="button" class="btn good lg" data-act="export-closing-excel" ${CP.length ? '' : 'disabled'}>
+            📊 تصدير تقرير الإغلاق (Excel)
+          </button>
+          <button type="button" class="btn danger lg" data-act="purge-closing-records" ${CP.length ? '' : 'disabled'}>
+            🗑️ مسح الحركات المصدرة من النظام
+          </button>
+        </div>
+      </div>
+
+      <!-- Overview Filters with Horizontal Scroll Buttons -->
+      <div class="scroll-wrap" style="margin-bottom:16px">
+        <button type="button" class="scroll-btn" data-act="scroll-bar" data-d="1" title="تمرير لليمين" aria-label="تمرير لليمين">›</button>
+        <div class="scroll-cnt">
+          ${PERIODS.map(([k, l]) => `<button type="button" class="chip" data-act="set-period" data-p="${k}" aria-pressed="${ui.period === k}">${l}</button>`).join('')}
+        </div>
+        <button type="button" class="scroll-btn" data-act="scroll-bar" data-d="-1" title="تمرير لليسار" aria-label="تمرير لليسار">‹</button>
+      </div>
+
+      <div class="kpis">
+        <div class="card kpi">
+          <div class="l">إجمالي الإيرادات</div>
+          <div class="v" style="color:var(--accent)">${money(T.net)}</div>
+        </div>
+        <div class="card kpi">
+          <div class="l">عدد الفواتير</div>
+          <div class="v">${T.count}</div>
+        </div>
+        <div class="card kpi">
+          <div class="l">متوسط الفاتورة</div>
+          <div class="v">${money(T.avg)}</div>
+        </div>
+        <div class="card kpi">
+          <div class="l">أكثر الأصناف طلباً</div>
+          <div class="v" style="font-size:1.15rem;font-weight:700">${T.top[0] ? esc(T.top[0].name) : 'لا توجد مبيعات'}</div>
+        </div>
+      </div>
+
+      <h2 style="margin:24px 0 12px">سجل الفواتير (${P.length})</h2>
+      <div class="tw" style="margin-bottom:28px">
+        <table class="rep-table">
+          <thead>
+            <tr>
+              <th>رقم الفاتورة</th>
+              <th>التاريخ والوقت</th>
+              <th>النوع</th>
+              <th>الأصناف المطلوبة</th>
+              <th class="n">المطلوب</th>
+              <th>طريقة الدفع</th>
+              <th class="n">إجراء</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${[...P].reverse().slice(0, 30).map(s => `
+              <tr>
+                <td><b>#${s.no}</b></td>
+                <td>${fDay(s.ts)} ${fTime(s.ts)}</td>
+                <td>${s.type === 'table' ? esc(s.table) : 'تيك أواي'}</td>
+                <td style="white-space:normal;min-width:200px">${esc((s.lines || []).map(l => l.qty + 'x ' + l.name).join('، '))}</td>
+                <td class="n" style="font-weight:700;color:var(--accent)">${money(s.total)}</td>
+                <td><span class="pill mut">${esc(getPayName(s.pay))}</span></td>
+                <td class="n">
+                  <!-- Working Historical Order Delete Button -->
+                  <button type="button" class="ibtn danger" data-act="void-sale" data-id="${s.id}" title="حذف الفاتورة من السجل">🗑️</button>
+                </td>
+              </tr>`).join('') || '<tr><td colspan="7" class="empty"><p style="font-weight:700;font-size:1.05rem;margin-bottom:6px">لا توجد فواتير مسجلة حالياً</p><p class="sub">ستظهر هنا الفواتير المكتملة أو المستوردة عبر ملف إكسيل</p></td></tr>'}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  function exportClosingExcel() {
+    const CP = S.sales.filter(s => inClosingPeriod(s.ts));
+    if (!CP.length) { toast('لا توجد فواتير في هذه الفترة لتصديرها'); return; }
+    if (typeof XLSX === 'undefined') { toast('مكتبة SheetJS قيد التحميل...'); return; }
+    const CT = summarizeSales(CP);
+
+    const periodLabel = ui.closingType === 'day'
+      ? 'يوم ' + ui.closingDayDate
+      : ui.closingType === 'week'
+      ? 'الأسبوع المنتهي في ' + ui.closingDayDate
+      : 'شهر ' + ui.closingMonthDate;
+
+    const summaryRows = [
+      ['تقرير تسوية وإغلاق الحسابات المالية', S.settings.businessName],
+      ['نوع الفترة', ui.closingType === 'day' ? 'يومي' : ui.closingType === 'week' ? 'أسبوعي' : 'شهري'],
+      ['تاريخ الفترة', periodLabel],
+      ['تاريخ الاستخراج', new Date().toLocaleString('ar-EG')],
+      ['', ''],
+      ['المؤشر المالي', 'القيمة'],
+      ['عدد الفواتير المنفذة', CT.count],
+      ['صافي الإيرادات', CT.net],
+      ['المحصل نقداً (كاش)', CT.cash],
+      ['المحصل بطاقات / فيزا', CT.card],
+      ['المحصل محافظ إلكترونية', CT.wallet],
+      ['المبلغ الإجمالي النهائي', CT.gross]
+    ];
+    const ws1 = XLSX.utils.aoa_to_sheet(summaryRows);
+
+    const salesRows = [
+      ['رقم الفاتورة', 'التاريخ', 'الوقت', 'النوع', 'الموقع / الطاولة', 'الأصناف', 'الإجمالي الفرعي', 'الخصم', 'الخدمة', 'الضريبة', 'الإجمالي النهائي', 'طريقة الدفع'],
+      ...CP.map(s => [
+        s.no,
+        dayKey(s.ts),
+        fTime(s.ts),
+        s.type === 'table' ? 'طاولة' : 'تيك أواي',
+        s.table || '',
+        (s.lines || []).map(l => l.qty + 'x ' + l.name).join(' | '),
+        s.sub, s.disc, s.svc, s.tax, s.total, getPayName(s.pay)
+      ])
+    ];
+    const ws2 = XLSX.utils.aoa_to_sheet(salesRows);
+
+    const itemsRows = [
+      ['اسم الصنف', 'الكمية المباعة', 'إجمالي الإيرادات'],
+      ...CT.top.map(t => [t.name, t.qty, t.rev])
+    ];
+    const ws3 = XLSX.utils.aoa_to_sheet(itemsRows);
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws1, 'ملخص الإغلاق');
+    XLSX.utils.book_append_sheet(wb, ws2, 'فواتير الفترة');
+    XLSX.utils.book_append_sheet(wb, ws3, 'مبيعات الأصناف');
+
+    const cleanTag = (ui.closingType === 'month' ? ui.closingMonthDate : ui.closingDayDate).replace(/-/g, '');
+    XLSX.writeFile(wb, `BIMBO_Closing_${ui.closingType}_${cleanTag}.xlsx`);
+    toast('تم تصدير تقرير إغلاق الفترة بنجاح إلى ملف Excel');
+  }
+
+  function exportSalesExcel() {
+    if (!S.sales.length) { toast('لا توجد مبيعات في السجل لتصديرها'); return; }
+    if (typeof XLSX === 'undefined') { toast('مكتبة SheetJS قيد التحميل...'); return; }
+    const rows = [
+      ['رقم الفاتورة', 'التاريخ', 'الوقت', 'النوع', 'الطاولة / الملاحظة', 'الأصناف', 'الإجمالي الفرعي', 'الخصم', 'الخدمة', 'الضريبة', 'الإجمالي النهائي', 'طريقة الدفع'],
+      ...S.sales.map(s => [
+        s.no,
+        dayKey(s.ts),
+        fTime(s.ts),
+        s.type === 'table' ? 'طاولة' : 'تيك أواي',
+        s.table || '',
+        (s.lines || []).map(l => l.qty + 'x ' + l.name).join(' | '),
+        s.sub, s.disc, s.svc, s.tax, s.total, getPayName(s.pay)
+      ])
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Sales History');
+    const d = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `BIMBO_Sales_${d}.xlsx`);
+    toast('تم تصدير سجل المبيعات إلى Excel');
+  }
+
+  function handleSalesImport(file) {
+    if (typeof XLSX === 'undefined') { toast('مكتبة SheetJS قيد التحميل...'); return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        if (!rows || rows.length < 2) { toast('الملف لا يحتوي على سجلات فواتير'); return; }
+
+        const headers = rows[0].map(h => String(h || '').trim().toLowerCase());
+        const noIdx = headers.findIndex(h => h.includes('رقم') || h.includes('no') || h.includes('id'));
+        const dateIdx = headers.findIndex(h => h.includes('تاريخ') || h.includes('date') || h.includes('وقت'));
+        const totalIdx = headers.findIndex(h => h.includes('إجمالي') || h.includes('نهائي') || h.includes('total') || h.includes('مبلغ'));
+        const subIdx = headers.findIndex(h => h.includes('فرعي') || h.includes('sub'));
+        const itemsIdx = headers.findIndex(h => h.includes('صنف') || h.includes('أصناف') || h.includes('items'));
+        const payIdx = headers.findIndex(h => h.includes('دفع') || h.includes('طريقة') || h.includes('pay'));
+        const typeIdx = headers.findIndex(h => h.includes('نوع') || h.includes('طاولة') || h.includes('type'));
+
+        let imported = 0;
+        for (let i = 1; i < rows.length; i++) {
+          const r = rows[i];
+          if (!r || !r.length) continue;
+          const total = num(r[totalIdx > -1 ? totalIdx : 1]);
+          if (total <= 0) continue;
+
+          let ts = Date.now();
+          const dRaw = r[dateIdx > -1 ? dateIdx : 0];
+          if (typeof dRaw === 'number') ts = new Date((dRaw - 25569) * 86400 * 1000).getTime();
+          else if (dRaw) {
+            const parsed = Date.parse(String(dRaw));
+            if (!isNaN(parsed)) ts = parsed;
+          }
+
+          const no = parseInt(r[noIdx > -1 ? noIdx : -1]) || S.counter + i;
+          const sub = num(r[subIdx > -1 ? subIdx : -1]) || total;
+          const payRaw = String(r[payIdx > -1 ? payIdx : -1] || 'نقدي').toLowerCase();
+          const pay = payRaw.includes('بطاق') || payRaw.includes('فيزا') || payRaw.includes('card') ? 'card'
+            : payRaw.includes('محفظ') || payRaw.includes('كاش') || payRaw.includes('wallet') ? 'wallet' : 'cash';
+          const typeRaw = String(r[typeIdx > -1 ? typeIdx : -1] || '');
+          const isTable = typeRaw.includes('طاول') || typeRaw.includes('table');
+
+          let lines = [];
+          const itemsRaw = String(r[itemsIdx > -1 ? itemsIdx : -1] || '');
+          if (itemsRaw) {
+            lines = itemsRaw.split(/[|,]/).map(part => {
+              const p = part.trim();
+              if (!p) return null;
+              const match = p.match(/(\d+)\s*[xX*×]\s*(.+)/);
+              if (match) return { id: uid(), name: match[2].trim(), price: r2(total / num(match[1])), qty: parseInt(match[1]) || 1, note: '' };
+              return { id: uid(), name: p, price: total, qty: 1, note: '' };
+            }).filter(Boolean);
+          }
+          if (!lines.length) lines = [{ id: uid(), name: 'طلب مستورد', price: total, qty: 1, note: '' }];
+
+          S.sales.push({
+            id: uid(),
+            no,
+            ts,
+            type: isTable ? 'table' : 'take',
+            table: isTable ? (typeRaw || 'طاولة مستوردة') : '',
+            lines,
+            sub,
+            disc: 0,
+            svc: 0,
+            tax: 0,
+            total,
+            net: sub,
+            pay,
+            imported: true
+          });
+          imported++;
+        }
+        S.sales.sort((a, b) => a.ts - b.ts);
+        save(); render();
+        toast(`تم دمج ${imported} فاتورة تاريخية بنجاح!`);
+      } catch(err) {
+        toast('تعذر استيراد ملف المبيعات: تأكد من صياغة الأعمدة');
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  /* ---------- 6. Dynamic Settings Panel ---------- */
+  function pageSettings() {
+    const st = S.settings;
+    const methods = st.paymentMethods || [];
+
+    return `
+      <div class="phead">
+        <div>
+          <h1>إعدادات الكرفان والفواتير</h1>
+          <p class="sub">تخصيص بيانات المنشأة، رسالة الفاتورة، نسبة الضريبة والخدمة، وطرق الدفع المقبولة</p>
+        </div>
+        <div class="row">
+          <button type="button" class="btn pri" data-act="download-standalone-html">تحميل التطبيق كملف HTML مستقل</button>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px;align-items:start">
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <div class="card">
+            <h3 style="margin-bottom:12px">بيانات الكرفان / النشاط التجاري</h3>
+            <div class="fg">
+              <label class="f" style="grid-column:1/-1">اسم الكرفان أو المطعم
+                <input data-set="businessName" value="${esc(st.businessName)}">
+              </label>
+              <label class="f">رقم الهاتف
+                <input data-set="phone" value="${esc(st.phone)}" placeholder="مثال: 010xxxxxxxx">
+              </label>
+              <label class="f">رمز العملة
+                <input data-set="currency" value="${esc(st.currency)}">
+              </label>
+              <label class="f" style="grid-column:1/-1">العنوان أو موقع الكرفان
+                <input data-set="address" value="${esc(st.address)}" placeholder="مثال: ممشى أهل مصر - كورنيش النيل">
+              </label>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 style="margin-bottom:12px">تخصيص نصوص الفاتورة المطبوعة</h3>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <label class="f">ترويسة الفاتورة (رسالة ترحيبية في الأعلى)
+                <input data-set="receiptHeader" value="${esc(st.receiptHeader)}">
+              </label>
+              <label class="f">تذييل الفاتورة (رسالة الشكر في الأسفل)
+                <input data-set="receiptFooter" value="${esc(st.receiptFooter)}">
+              </label>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 style="margin-bottom:12px">الضرائب ورسوم الخدمة</h3>
+            <div class="fg">
+              <div style="grid-column:1/-1;display:flex;align-items:center;gap:10px">
+                <input type="checkbox" id="svc-toggle" data-set-toggle="serviceEnabled" ${st.serviceEnabled ? 'checked' : ''} style="width:20px;height:20px">
+                <label for="svc-toggle" style="font-weight:700;cursor:pointer">تفعيل رسوم الخدمة (%)</label>
+              </div>
+              <label class="f">نسبة رسوم الخدمة (%)
+                <input data-set="serviceRate" type="number" min="0" step="any" value="${st.serviceRate}" ${st.serviceEnabled ? '' : 'disabled'}>
+              </label>
+
+              <div style="grid-column:1/-1;display:flex;align-items:center;gap:10px;margin-top:10px">
+                <input type="checkbox" id="tax-toggle" data-set-toggle="taxEnabled" ${st.taxEnabled ? 'checked' : ''} style="width:20px;height:20px">
+                <label for="tax-toggle" style="font-weight:700;cursor:pointer">تفعيل ضريبة القيمة المضافة (%)</label>
+              </div>
+              <label class="f">نسبة الضريبة (%)
+                <input data-set="taxRate" type="number" min="0" step="any" value="${st.taxRate}" ${st.taxEnabled ? '' : 'disabled'}>
+              </label>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 style="margin-bottom:12px">طرق الدفع المتاحة للعملاء</h3>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              ${methods.map(m => `
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface2)">
+                  <span style="font-weight:700">${esc(m.name)}</span>
+                  <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+                    <input type="checkbox" data-pay-toggle="${m.id}" ${m.active ? 'checked' : ''} style="width:18px;height:18px">
+                    <span style="font-size:.85rem;color:var(--muted)">مفعل</span>
+                  </label>
+                </div>`).join('')}
+            </div>
+          </div>
+
+          <div class="card" style="border-color:rgba(185,37,28,0.2)">
+            <h3 style="margin-bottom:8px;color:var(--bad)">منطقة مسح البيانات</h3>
+            <p class="sub" style="margin-bottom:14px">كل البيانات محفوظة محلياً على هذا المتصفح والجهاز، يمكنك تصفيرها في أي وقت.</p>
+            <div class="row">
+              <button type="button" class="btn danger" data-act="wipe-all">مسح جميع البيانات والبدء بصفحة بيضاء</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Receipt Preview -->
+        <div class="card" style="position:sticky;top:calc(env(safe-area-inset-top, 0px) + 76px)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <h3>معاينة حية للفاتورة المطبوعة</h3>
+            <span class="pill good">تحديث فوري</span>
+          </div>
+          <p class="sub" style="margin-bottom:14px">هكذا يظهر الإيصال عند الطباعة أو المشاركة للعميل مع تعديلاتك الحالية:</p>
+          <div class="receipt" id="settings-receipt-preview">${esc(generateReceiptPreview())}</div>
+        </div>
+      </div>`;
+  }
+
+  function generateReceiptPreview() {
+    const st = S.settings;
+    const linePad = (a, b) => a + ' '.repeat(Math.max(1, 32 - a.length - b.length)) + b;
+    const divider = '--------------------------------';
+    const sub = 100;
+    const svc = st.serviceEnabled ? r2(sub * (st.serviceRate || 0) / 100) : 0;
+    const tax = st.taxEnabled ? r2(sub * (st.taxRate || 0) / 100) : 0;
+    const total = r2(sub + svc + tax);
+
+    return [
+      st.businessName,
+      st.phone ? 'هاتف: ' + st.phone : '',
+      st.address ? st.address : '',
+      divider,
+      st.receiptHeader ? st.receiptHeader : '',
+      divider,
+      'فاتورة رقم: #1001',
+      'التاريخ: اليوم ' + fTime(Date.now()),
+      'نوع الطلب: طاولة 1',
+      divider,
+      linePad('1x صنف تجريبي للمعاينة', '100 ' + st.currency),
+      divider,
+      linePad('الإجمالي الفرعي:', sub + ' ' + st.currency),
+      ...(st.serviceEnabled ? [linePad(`الخدمة (${st.serviceRate}%):`, svc + ' ' + st.currency)] : []),
+      ...(st.taxEnabled ? [linePad(`الضريبة (${st.taxRate}%):`, tax + ' ' + st.currency)] : []),
+      divider,
+      linePad('المطلوب النهائي:', total + ' ' + st.currency),
+      linePad('طريقة الدفع:', 'نقدي'),
+      divider,
+      st.receiptFooter ? st.receiptFooter : 'شكراً لزيارتكم!'
+    ].filter(Boolean).join('\n');
+  }
+
+  /* ---------- Events & Actions Router (All Working & Tested) ---------- */
+  const Actions = {
+    scrim(el, e) { if (e.target === el) closeModal(); },
+    mclose: closeModal,
+    mok() {
+      const f = modalOk;
+      closeModal();
+      if (typeof f === 'function') f();
+    },
+    theme() {
+      const isDark = document.documentElement.classList.contains('dark');
+      applyTheme(!isDark);
+      renderShell();
+      toast(!isDark ? 'تم تفعيل الوضع الليلي' : 'تم تفعيل الوضع النهاري');
+    },
+    nav(el) {
+      ui.view = el.dataset.v;
+      ui.ctx = ui.view === 'take' ? { kind: 'take' } : null;
+      ui.editTables = false;
+      ui.otab = 'menu';
+      ui.q = '';
+      render();
+      scrollTo(0, 0);
+    },
+    'open-table'(el) {
+      ui.ctx = { kind: 'table', id: el.dataset.id };
+      ui.otab = 'menu';
+      ui.q = '';
+      render();
+      scrollTo(0, 0);
+    },
+    'back-tables'() {
+      const t = tableOf();
+      if (t && t.order && !t.order.lines.length) t.order = null;
+      ui.ctx = null;
+      save(); render();
+    },
+    otab(el) {
+      ui.otab = el.dataset.t;
+      const cols = $('.ocols'); if (cols) cols.dataset.tab = ui.otab;
+      $$('.tabs .btn').forEach(b => b.classList.toggle('pri', b.dataset.t === ui.otab));
+    },
+    'scroll-bar'(el) {
+      const dir = Number(el.dataset.d || 1);
+      const wrap = el.closest('.scroll-wrap');
+      if (!wrap) return;
+      const cnt = wrap.querySelector('.scroll-cnt');
+      if (cnt) {
+        cnt.scrollBy({ left: dir * 200, behavior: 'smooth' });
+      }
+    },
+    'filter-cat'(el) {
+      ui.cat = el.dataset.c;
+      $$('.cats .chip').forEach(b => b.setAttribute('aria-pressed', b.dataset.c === ui.cat));
+      const g = $('#grid'); if (g) g.innerHTML = gridHTML();
+    },
+    'filter-mcat'(el) {
+      ui.mcat = el.dataset.c;
+      render();
+    },
+    'add-item-cart'(el) {
+      const o = getOrder();
+      const it = S.items.find(x => x.id === el.dataset.id);
+      if (!it) return;
+      const exist = (o.lines = o.lines || []).find(x => x.id === it.id);
+      if (exist) exist.qty++;
+      else o.lines.push({ id: it.id, name: it.name, price: it.price, qty: 1, note: '' });
+      save(); refreshOrder();
+    },
+    'item-disabled'() {
+      toast('هذا الصنف غير متوفر حالياً في القائمة');
+    },
+    'inc-cart'(el) {
+      const line = getOrder().lines.find(x => x.id === el.dataset.id);
+      if (line) line.qty++;
+      save(); refreshOrder();
+    },
+    'dec-cart'(el) {
+      const o = getOrder();
+      const idx = o.lines.findIndex(x => x.id === el.dataset.id);
+      if (idx > -1) {
+        if (--o.lines[idx].qty <= 0) o.lines.splice(idx, 1);
+      }
+      save(); refreshOrder();
+    },
+    // Working Single Item Delete
+    'del-cart-line'(el) {
+      const o = getOrder();
+      const idx = (o.lines || []).findIndex(x => x.id === el.dataset.id);
+      if (idx > -1) {
+        o.lines.splice(idx, 1);
+        save(); refreshOrder();
+        toast('تم حذف الصنف من الفاتورة');
+      }
+    },
+    // Working Clear Order with In-App Confirm Dialog
+    'clear-order'() {
+      ask('هل تريد إفراغ جميع أصناف الفاتورة الحالية والبدء من جديد؟', 'نعم، إفراغ الفاتورة', () => {
+        const o = getOrder();
+        o.lines.length = 0;
+        save(); refreshOrder();
+        toast('تم إفراغ الفاتورة بالكامل');
+      });
+    },
+    checkout: openCheckout,
+    'open-mobile-cart'() {
+      ui.isMobileCartOpen = true;
+      refreshOrder();
+    },
+    'close-mobile-cart'() {
+      ui.isMobileCartOpen = false;
+      refreshOrder();
+    },
+    'copy-receipt'() {
+      if (window._lastReceipt) {
+        navigator.clipboard.writeText(window._lastReceipt).then(() => toast('تم نسخ الفاتورة للحافظة'));
+      }
+    },
+    'print-receipt'() {
+      window.print();
+    },
+    'toggle-edit-tables'() {
+      ui.editTables = !ui.editTables;
+      render();
+    },
+    'add-table'() {
+      S.tables.push({ id: uid(), name: 'طاولة ' + (S.tables.length + 1), order: null });
+      save(); render();
+    },
+    'ren-table'(el) {
+      const t = S.tables.find(x => x.id === el.dataset.id);
+      modal(`
+        <form id="mf">
+          <h3>تعديل اسم الطاولة</h3>
+          <input name="n" required value="${esc(t.name)}" style="margin:14px 0">
+          <div class="acts">
+            <button type="button" class="btn" data-act="mclose">إلغاء</button>
+            <button class="btn pri" type="submit">حفظ الاسم</button>
+          </div>
+        </form>`, fd => {
+          t.name = fd.get('n').trim();
+          save(); closeModal(); render();
+        });
+    },
+    'del-table'(el) {
+      const t = S.tables.find(x => x.id === el.dataset.id);
+      ask(`هل تريد حذف «${esc(t.name)}» نهائياً؟`, 'تأكيد الحذف', () => {
+        S.tables.splice(S.tables.indexOf(t), 1);
+        save(); render(); toast('تم حذف الطاولة');
+      });
+    },
+    'mv-table'(el) {
+      const i = S.tables.findIndex(x => x.id === el.dataset.id), j = i + (+el.dataset.d);
+      if (j < 0 || j >= S.tables.length) return;
+      [S.tables[i], S.tables[j]] = [S.tables[j], S.tables[i]];
+      save(); render();
+    },
+    'new-item': () => itemModal(),
+    'edit-item': el => itemModal(el.dataset.id),
+    // Working Menu Item Delete with In-App Confirm Dialog
+    'del-item'(el) {
+      const it = S.items.find(x => x.id === el.dataset.id);
+      if (!it) return;
+      ask(`هل تريد حذف صنف «${esc(it.name)}» من المنيو نهائياً؟`, 'تأكيد حذف الصنف', () => {
+        const idx = S.items.indexOf(it);
+        if (idx > -1) {
+          S.items.splice(idx, 1);
+          save(); render(); toast(`تم حذف «${it.name}» من المنيو`);
+        }
+      });
+    },
+    'toggle-item-avail'(el) {
+      const it = S.items.find(x => x.id === el.dataset.id);
+      if (it) {
+        it.available = !(it.available !== false);
+        save(); render();
+        toast(it.available ? `«${it.name}» متاح للطلب الآن` : `«${it.name}» أصبح غير متاح`);
+      }
+    },
+    'export-menu-excel': exportMenuExcel,
+    'export-sales-excel': exportSalesExcel,
+    'export-closing-excel': exportClosingExcel,
+    // Working Purge Exported Closing Records
+    'purge-closing-records'() {
+      const CP = S.sales.filter(s => inClosingPeriod(s.ts));
+      if (!CP.length) { toast('لا توجد حركات في هذه الفترة لمسحها'); return; }
+      ask(`تحذير هام: سيتم مسح ${CP.length} فاتورة تابعة لهذه الفترة نهائياً من قاعدة البيانات بعد تصديرها لإغلاق الدفاتر. هل تريد المتابعة؟`, 'تأكيد مسح حركات الفترة', () => {
+        const purgedCount = CP.length;
+        S.sales = S.sales.filter(s => !inClosingPeriod(s.ts));
+        save(); render();
+        toast(`تم إغلاق الفترة بنجاح ومسح ${purgedCount} فاتورة من السجل!`);
+      });
+    },
+    'set-period'(el) {
+      ui.period = el.dataset.p;
+      render();
+    },
+    'set-ctype'(el) {
+      ui.closingType = el.dataset.t;
+      render();
+    },
+    // Working Historical Order Delete / Void with In-App Dialog
+    'void-sale'(el) {
+      const s = S.sales.find(x => x.id === el.dataset.id);
+      if (!s) return;
+      ask(`هل تريد حذف الفاتورة رقم #${s.no} بقيمة ${money(s.total)} نهائياً من السجلات والتقارير؟`, 'تأكيد حذف الفاتورة', () => {
+        const idx = S.sales.indexOf(s);
+        if (idx > -1) {
+          S.sales.splice(idx, 1);
+          save(); render(); toast(`تم حذف الفاتورة #${s.no}`);
+        }
+      });
+    },
+    'wipe-all'() {
+      ask('تحذير: سيتم مسح كافة الأصناف والمبيعات والفواتير نهائياً. هل أنت متأكد؟', 'تأكيد مسح الكل', () => {
+        S = cleanSeed();
+        save(); render(); toast('تمت تصفية النظام بنجاح');
+      });
+    },
+    'download-standalone-html'() {
+      const html = document.documentElement.outerHTML;
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `BIMBO_POS_${new Date().toISOString().slice(0, 10)}.html`;
+      a.click();
+      toast('تم تنزيل ملف الـ HTML الكامل والمستقل');
+    }
+  };
+
+  /* Event Listeners */
+  document.addEventListener('click', e => {
+    const el = e.target.closest('[data-act]');
+    if (!el || el.tagName === 'SELECT' || el.tagName === 'INPUT') return;
+    const act = el.dataset.act;
+    const f = Actions[act];
+    if (typeof f === 'function') f(el, e);
+  });
+
+  document.addEventListener('submit', e => {
+    e.preventDefault();
+    if (typeof modalSubmit === 'function') modalSubmit(new FormData(e.target));
+  });
+
+  document.addEventListener('input', e => {
+    const t = e.target;
+    if (t.id === 'q') {
+      ui.q = t.value;
+      const g = $('#grid'); if (g) g.innerHTML = gridHTML();
+    } else if (t.closest('#modal [data-live="co"]')) {
+      coRefresh();
+    } else if (t.dataset.set) {
+      const k = t.dataset.set;
+      S.settings[k] = ['serviceRate', 'taxRate'].includes(k) ? num(t.value) : t.value;
+      save();
+      const prev = $('#settings-receipt-preview');
+      if (prev) prev.textContent = generateReceiptPreview();
+    }
+  });
+
+  document.addEventListener('change', e => {
+    const t = e.target;
+    if (t.dataset.act === 'line-note') {
+      const l = getOrder().lines.find(x => x.id === t.dataset.id);
+      if (l) { l.note = t.value; save(); }
+    } else if (t.dataset.act === 'msort') {
+      ui.msort = t.value; render();
+    } else if (t.dataset.act === 'closing-d-date') {
+      ui.closingDayDate = t.value; render();
+    } else if (t.dataset.act === 'closing-m-date') {
+      ui.closingMonthDate = t.value; render();
+    } else if (t.dataset.set) {
+      const k = t.dataset.set;
+      S.settings[k] = ['serviceRate', 'taxRate'].includes(k) ? num(t.value) : t.value;
+      save();
+      renderShell();
+      const prev = $('#settings-receipt-preview');
+      if (prev) prev.textContent = generateReceiptPreview();
+    } else if (t.dataset.setToggle) {
+      const k = t.dataset.setToggle;
+      S.settings[k] = t.checked;
+      save();
+      render();
+      toast('تم تحديث الإعداد');
+    } else if (t.dataset.payToggle) {
+      const id = t.dataset.payToggle;
+      const m = S.settings.paymentMethods.find(x => x.id === id);
+      if (m) { m.active = t.checked; save(); toast('تم تحديث طرق الدفع'); }
+    } else if (t.dataset.act === 'import-menu-excel' && t.files[0]) {
+      handleMenuImport(t.files[0]);
+      t.value = '';
+    } else if (t.dataset.act === 'import-sales-excel' && t.files[0]) {
+      handleSalesImport(t.files[0]);
+      t.value = '';
+    }
+  });
+
+  /* Service Worker Registration for Native Browser PWA Compliance */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      const swCode = "self.addEventListener('install', e => self.skipWaiting()); self.addEventListener('activate', e => clients.claim()); self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));";
+      const blob = new Blob([swCode], { type: 'application/javascript' });
+      navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
+    });
+  }
+
+  // Initial render
+  render();
+  </script>
+</body>
+</html>
